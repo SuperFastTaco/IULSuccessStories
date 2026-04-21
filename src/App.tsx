@@ -409,7 +409,7 @@ const EDUCATION_CONTENT: EducationItem[] = [
 
 Imagine, for a moment, the very first car you ever owned. For many of us, it was a rusty, clunky relic—perhaps an old Chevy Corsica or in my case, a beat-up Dodge Ram van. It wasn't pretty, and it certainly wasn't efficient, but it served a purpose: it got you from Point A to Point B. It was the bare minimum I could afford.
 
-![image](/my-dodge-van.jpeg|My first car: A Dodge Ram van that started it all.)
+![image](/picture/my-dodge-van.jpeg|My first car: A Dodge Ram van that started it all.)
 
 However, if you were going on a cross-country road trip today, you wouldn't want to drive that old van. You’d want something modern, efficient, and packed with the latest safety features and technology.
 
@@ -435,7 +435,7 @@ But the Whole Life Volvo has two major mechanical issues. First, it is incredibl
 
 Second, it operates like a "black box". The primary way your cash value grows is through a dividend declared by the insurance company. But how do they calculate that dividend? They take the premiums, add mortality credits and interest, and then subtract their own corporate expenses (like employee bonuses or new buildings) and reserve holdbacks. They never disclose the exact math to you. It is exactly like going to a car dealership, asking to see the engine of the car you are buying, and having the salesman say, "Trust me, you aren't allowed to look under the hood". Furthermore, a landmark 1979 study by the Federal Trade Commission revealed that the actual rates of return inside these secretive policies were often 2% or less. Consumers weren’t buying it and demanded something different.
 
-![image](/WL Article.jpg|A 1979 Federal Trade Commission report revealed that Whole Life insurance often yielded returns of 2% or less.|small)
+![image](/picture/WL Article.jpg|A 1979 Federal Trade Commission report revealed that Whole Life insurance often yielded returns of 2% or less.|small)
 
 ### Stage 3: Universal Life (The Transparent "Checking Account")
 
@@ -640,7 +640,7 @@ To calculate this present value, the IRS mandates the use of a statutory interes
 
 Example: For our 45-year-old male with a $273,063 death benefit, the actuaries run the GSP = PVFB formula and determine his absolute maximum capacity is $100,000. If he tried to drop $100,001 into this policy on the first day, the insurance company would be legally required to refund the excess dollar with interest to maintain the contract's life insurance status.
 
-![image](/guideline-single.png|The GSP represents the total capacity of your policy's "gas tank".)
+![image](/picture/guideline-single.png|The GSP represents the total capacity of your policy's "gas tank".)
 
 ### 2. The Guideline Level Premium (GLP): The "Marathon" Pace
 (The maximum lifetime annual payment limit)
@@ -649,7 +649,7 @@ The Concept: While the GSP is for lump sums, the Guideline Level Premium (GLP) d
 
 The Formula: Instead of calculating a single lump sum, the GLP determines a level annual payment. Mathematically, it takes the Present Value of Future Benefits and divides it by the present value of a life-contingent annuity that stretches all the way to the policy's maturity. 
 
-![image](/guideline-level-formula.png|The GLP formula determines the sustainable annual funding limit.)
+![image](/picture/guideline-level-formula.png|The GLP formula determines the sustainable annual funding limit.)
 
 Here is the secret weapon of the GLP: The IRS dictates that this calculation must use an even lower statutory interest rate, currently 2%. Because a lower interest rate is used in the denominator of the fraction, it mathematically results in a higher allowable cumulative premium over the long term.
 
@@ -657,7 +657,7 @@ Example: For our 45-year-old male's $273,063 policy, the GLP formula generates a
 
 However, the Guideline Premium Test is cumulative. The rules state you cannot exceed the greater of the GSP or the sum of your GLPs. In year one, his limit is the $100,000 GSP. But if he pays $6,620 every year for 20 years, his cumulative GLP limit would eventually surpass the $100,000 GSP limit, giving him more room to build wealth over a marathon timeframe.
 
-![image](/guideline-level.png|The GLP allows for consistent, long-term wealth accumulation.)
+![image](/picture/guideline-level.png|The GLP allows for consistent, long-term wealth accumulation.)
 
 ### 3. The 7-Pay Premium: The "Speed Limit"
 (The maximum annual limit to avoid tax penalties)
@@ -668,7 +668,7 @@ If you fund your policy too fast during the first seven years, your policy is sl
 
 The Formula: The 7-pay premium is the exact annual amount required to have the policy fully paid-up after exactly seven level annual payments. 
 
-![image](/7pay-formula.png|The 7-Pay formula calculates the maximum speed at which you can fund your policy.)
+![image](/picture/7pay-formula.png|The 7-Pay formula calculates the maximum speed at which you can fund your policy.)
 
 PVFB = Present value of future benefits
 
@@ -678,7 +678,7 @@ Unlike the GLP's lifetime annuity denominator, the 7-pay denominator only stretc
 
 Example: For our 45-year-old male, the 7-Pay formula dictates his MEC "speed limit" is $20,844 per year.
 
-![image](/7pay-premium.png|The 7-Pay limit ensures your policy maintains its tax-free status.)
+![image](/picture/7pay-premium.png|The 7-Pay limit ensures your policy maintains its tax-free status.)
 
 If he wants to get his entire $100,000 GSP capacity into the policy as fast as legally possible without triggering MEC taxes, he cannot just dump $100,000 in on day one. Instead, he must obey the $20,844 speed limit. By paying roughly $20,844 a year for four years, then the balance of the GSP in year five, he successfully fills his $100,000 bucket just under the radar.
 
@@ -729,7 +729,7 @@ Because the client is buying almost $1.5 million of pure life insurance, the int
 
 By year 5, the client has contributed $190,840 into the policy, but because over $61,000 was eaten up by insurance charges and fees, their actual account value is only $161,029. They are effectively losing money because the policy is starving under the weight of its own expenses.
 
-![image](/commission-ledger.png|The Commission-Driven design ledger showing a $1.46M death benefit and high expenses.)
+![image](/picture/commission-ledger.png|The Commission-Driven design ledger showing a $1.46M death benefit and high expenses.)
 
 ### The "Correct" Way: Built for the Client
 (Squeezing the death benefit to maximize cash)
@@ -738,7 +738,7 @@ Now, let's look at how a true financial architect designs an IUL. As we discusse
 
 Let's look at the exact same 46-year-old client, putting in the same $38,168 for the first four years.
 
-![image](/correct-ledger.png|The Correct Design ledger with a minimized death benefit to maximize cash accumulation.)
+![image](/picture/correct-ledger.png|The Correct Design ledger with a minimized death benefit to maximize cash accumulation.)
 
 Instead of an arbitrarily huge death benefit, the agent squeezes the initial death benefit down to just $500,000. Because the death benefit is a third of the size of the "Commission" policy, the agent takes a substantial pay cut, but look at what happens to the client's internal fees:
 
@@ -1420,14 +1420,14 @@ export default function App() {
                 <div className="relative rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 aspect-[3/4] bg-slate-50">
-                      <img src="/Illustration 2.jpg" alt="Illustration Cover" className="w-full h-full object-cover object-top" />
+                      <img src="/picture/Illustration 2.jpg" alt="Illustration Cover" className="w-full h-full object-cover object-top" />
                     </div>
                     <div className="grid grid-rows-2 gap-4">
                       <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50">
-                        <img src="/illustration 3.jpg" alt="Illustration Guide" className="w-full h-full object-cover object-top" />
+                        <img src="/picture/illustration 3.jpg" alt="Illustration Guide" className="w-full h-full object-cover object-top" />
                       </div>
                       <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50">
-                        <img src="/Illustration 1.jpg" alt="Illustration Ledger" className="w-full h-full object-cover object-top" />
+                        <img src="/picture/Illustration 1.jpg" alt="Illustration Ledger" className="w-full h-full object-cover object-top" />
                       </div>
                     </div>
                   </div>
@@ -1453,10 +1453,10 @@ export default function App() {
                 <div className="rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50 aspect-[3/4]">
-                      <img src="/Statement 1.jpg" alt="Annual Statement" className="w-full h-full object-cover object-top" />
+                      <img src="/picture/Statement 1.jpg" alt="Annual Statement" className="w-full h-full object-cover object-top" />
                     </div>
                     <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50 aspect-[3/4]">
-                      <img src="/Statement 2.jpg" alt="Statement Details" className="w-full h-full object-cover object-top" />
+                      <img src="/picture/Statement 2.jpg" alt="Statement Details" className="w-full h-full object-cover object-top" />
                     </div>
                   </div>
                 </div>
@@ -1481,14 +1481,14 @@ export default function App() {
                 <div className="rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50">
-                      <img src="/Report 1.jpg" alt="Performance Summary" className="w-full h-auto object-cover" />
+                      <img src="/picture/Report 1.jpg" alt="Performance Summary" className="w-full h-auto object-cover" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50">
-                        <img src="/Report 2.jpg" alt="Comparison Table" className="w-full h-full object-cover" />
+                        <img src="/picture/Report 2.jpg" alt="Comparison Table" className="w-full h-full object-cover" />
                       </div>
                       <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50">
-                        <img src="/Report 3.jpg" alt="Performance Graph" className="w-full h-full object-cover" />
+                        <img src="/picture/Report 3.jpg" alt="Performance Graph" className="w-full h-full object-cover" />
                       </div>
                     </div>
                   </div>
