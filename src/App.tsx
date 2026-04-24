@@ -23,7 +23,10 @@ import {
   PlayCircle,
   FileText,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Link as LinkIcon,
+  Check,
+  Share2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -40,6 +43,38 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
+
+const CopyLinkButton = ({ nav, storyId, educationId, className, iconOnly = false }: { nav?: string, storyId?: number, educationId?: number, className?: string, iconOnly?: boolean }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const params = new URLSearchParams();
+    if (nav) params.set('nav', nav);
+    if (storyId) params.set('story', storyId.toString());
+    if (educationId) params.set('education', educationId.toString());
+    
+    const url = `${window.location.origin}${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button 
+      onClick={handleCopy}
+      title="Copy link to clipboard"
+      className={`flex items-center gap-2 transition-all transition-colors ${iconOnly ? 'w-10 h-10 rounded-full border flex items-center justify-center p-0' : 'px-4 py-2 rounded-xl text-xs font-bold'} ${
+        copied 
+          ? 'bg-green-500 text-white border-green-500' 
+          : 'bg-white/5 border-white/10 dark:border-slate-800 text-slate-400 hover:text-primary hover:border-primary hover:bg-primary/5 shadow-sm'
+      } ${className || ''}`}
+    >
+      {copied ? <Check size={16} /> : <Share2 size={16} />}
+      {!iconOnly && (copied ? "Copied!" : "Share")}
+    </button>
+  );
+};
 
 const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
   if (type === 'term-cost') {
@@ -1291,6 +1326,29 @@ export default function App() {
   const [selectedStoryId, setSelectedStoryId] = useState<number | null>(null);
   const [selectedEducationId, setSelectedEducationId] = useState<number | null>(null);
 
+  // URL Deep Linking logic
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const navParam = params.get('nav');
+    const storyParam = params.get('story');
+    const educationParam = params.get('education');
+
+    if (navParam) setActiveNav(navParam);
+    if (storyParam) setSelectedStoryId(parseInt(storyParam));
+    if (educationParam) setSelectedEducationId(parseInt(educationParam));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeNav !== "Home") params.set('nav', activeNav);
+    if (selectedStoryId !== null) params.set('story', selectedStoryId.toString());
+    if (selectedEducationId !== null) params.set('education', selectedEducationId.toString());
+    
+    const searchString = params.toString();
+    const newUrl = `${window.location.pathname}${searchString ? '?' + searchString : ''}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [activeNav, selectedStoryId, selectedEducationId]);
+
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
     try {
       await fetch('/api/lead', {
@@ -1709,11 +1767,11 @@ export default function App() {
                     <div className="text-right mr-4">
                       <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Share Article</div>
                       <div className="flex gap-2">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
-                            <div className="w-1 h-1 rounded-full bg-current" />
-                          </div>
-                        ))}
+                        <CopyLinkButton 
+                          nav="Education" 
+                          educationId={selectedItem.id} 
+                          className="!bg-white/5 !border-white/10 !text-slate-400 hover:!text-white hover:!bg-white/10"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1865,10 +1923,18 @@ export default function App() {
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                      <span className="px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider shadow-sm">
                         {item.category}
                       </span>
+                    </div>
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <CopyLinkButton 
+                        nav="Education" 
+                        educationId={item.id} 
+                        iconOnly 
+                        className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-none shadow-lg text-primary" 
+                      />
                     </div>
                     {item.type === 'video' && (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -1949,13 +2015,16 @@ export default function App() {
           </div>
 
           <div className="flex-1 bg-[#F9F9F9] min-w-0 p-8 md:p-16 lg:p-24">
-            <button 
-              onClick={() => setSelectedStoryId(null)}
-              className="mb-12 flex items-center gap-2 text-slate-600 hover:text-primary font-bold transition-colors"
-            >
-              <X size={20} />
-              Back to Showcase
-            </button>
+            <div className="flex justify-between items-center mb-12">
+              <button 
+                onClick={() => setSelectedStoryId(null)}
+                className="flex items-center gap-2 text-slate-600 hover:text-primary font-bold transition-colors"
+              >
+                <X size={20} />
+                Back to Showcase
+              </button>
+              <CopyLinkButton nav="Stories" storyId={story.id} className="bg-white border-slate-200 shadow-none dark:bg-slate-800 dark:border-slate-700" />
+            </div>
 
             <div className="mb-16">
               <div className="flex gap-4">
@@ -2286,8 +2355,16 @@ export default function App() {
                     <div className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                       {story.category}
                     </div>
-                    <div className="text-2xl font-bold text-primary">
-                      {story.return}
+                    <div className="flex items-center gap-3">
+                      <CopyLinkButton 
+                        nav="Stories" 
+                        storyId={story.id} 
+                        iconOnly 
+                        className="!p-0 border-none hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400" 
+                      />
+                      <div className="text-2xl font-bold text-primary">
+                        {story.return}
+                      </div>
                     </div>
                   </div>
                   
@@ -2441,9 +2518,17 @@ export default function App() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                     <div className="absolute top-6 left-6">
-                      <span className="px-4 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">
+                      <span className="px-4 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] shadow-sm">
                         {item.category}
                       </span>
+                    </div>
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <CopyLinkButton 
+                        nav="Education" 
+                        educationId={item.id} 
+                        iconOnly 
+                        className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-none shadow-lg text-primary" 
+                      />
                     </div>
                   </div>
                   <div className="p-8 flex-grow flex flex-col">
@@ -2581,8 +2666,16 @@ export default function App() {
                     <div className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                       {story.category}
                     </div>
-                    <div className="text-2xl font-bold text-primary">
-                      {story.return}
+                    <div className="flex items-center gap-3">
+                      <CopyLinkButton 
+                        nav="Stories" 
+                        storyId={story.id} 
+                        iconOnly 
+                        className="!p-0 border-none hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400" 
+                      />
+                      <div className="text-2xl font-bold text-primary">
+                        {story.return}
+                      </div>
                     </div>
                   </div>
                   
