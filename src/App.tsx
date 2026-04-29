@@ -34,6 +34,7 @@ import {
   Line, 
   BarChart,
   Bar,
+  Cell,
   AreaChart,
   Area,
   XAxis, 
@@ -381,6 +382,102 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
           </AreaChart>
         </ResponsiveContainer>
         <p className="text-sm text-slate-500 mt-4 italic text-center">Correct design results in $158k+ more wealth over 20 years despite lower premiums.</p>
+      </div>
+    );
+  }
+
+  if (type === 'iul-proof-comparison') {
+    const data = [
+      { year: 2008, actual: 36009, illustrated: 38308 },
+      { year: 2009, actual: 71906, illustrated: 78870 },
+      { year: 2010, actual: 127078, illustrated: 121871 },
+      { year: 2011, actual: 178018, illustrated: 167479 },
+      { year: 2012, actual: 217696, illustrated: 215869 },
+      { year: 2013, actual: 234299, illustrated: 223172 },
+      { year: 2014, actual: 259167, illustrated: 232582 },
+      { year: 2015, actual: 282200, illustrated: 242216 },
+      { year: 2016, actual: 279632, illustrated: 254557 },
+      { year: 2017, actual: 304583, illustrated: 270216 },
+      { year: 2018, actual: 330608, illustrated: 286696 },
+      { year: 2019, actual: 348300, illustrated: 302563 },
+      { year: 2020, actual: 347679, illustrated: 319181 },
+      { year: 2021, actual: 386674, illustrated: 335116 },
+      { year: 2022, actual: 385900, illustrated: 353831 },
+      { year: 2023, actual: 384827, illustrated: 372372 },
+      { year: 2024, actual: 418476, illustrated: 391805 },
+      { year: 2025, actual: 445940, illustrated: 433299 },
+      { year: 2026, actual: 482947, illustrated: 455641 },
+    ];
+    return (
+      <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
+        <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Actual Performance vs. Original 2008 Illustration</h4>
+        <ResponsiveContainer width="100%" height="80%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="year" />
+            <YAxis label={{ value: 'Cash Value ($)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip 
+              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              formatter={(value) => [`$${value.toLocaleString()}`, '']}
+            />
+            <Legend verticalAlign="top" height={36}/>
+            <Area type="monotone" dataKey="actual" name="Actual Cash Value" stroke="#3b82f6" fillOpacity={1} fill="url(#colorActual)" strokeWidth={3} />
+            <Area type="monotone" dataKey="illustrated" name="Original Illustration (5.95%)" stroke="#94a3b8" fillOpacity={0} strokeDasharray="5 5" strokeWidth={2} />
+          </AreaChart>
+        </ResponsiveContainer>
+        <p className="text-sm text-slate-500 mt-4 italic text-center">Despite starting with two 0% years during the 2008 crash, the policy surged ahead of projections by year three.</p>
+      </div>
+    );
+  }
+
+  if (type === 'iul-proof-rates') {
+    const data = [
+      { year: '08', rate: 0 },
+      { year: '09', rate: 0 },
+      { year: '10', rate: 18.8 },
+      { year: '11', rate: 9.52 },
+      { year: '12', rate: 1.76 },
+      { year: '13', rate: 7.1 },
+      { year: '14', rate: 12.25 },
+      { year: '15', rate: 10.15 },
+      { year: '16', rate: 0 },
+      { year: '17', rate: 8.59 },
+      { year: '18', rate: 8.24 },
+      { year: '19', rate: 5.18 },
+      { year: '20', rate: 0 },
+      { year: '21', rate: 12.39 },
+      { year: '22', rate: 0 },
+      { year: '23', rate: 0 },
+      { year: '24', rate: 9.1 },
+      { year: '25', rate: 6.87 },
+      { year: '26', rate: 8.94 },
+    ];
+    return (
+      <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
+        <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Annual Index Interest Credits (2008-2026)</h4>
+        <ResponsiveContainer width="100%" height="80%">
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="year" />
+            <YAxis label={{ value: 'Interest Credit (%)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip 
+              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              formatter={(value) => [`${value}%`, 'Interest Credit']}
+            />
+            <Bar dataKey="rate" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.rate === 0 ? '#ef4444' : '#3b82f6'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        <p className="text-sm text-slate-500 mt-4 italic text-center">Six years of 0% returns (in red) were completely offset by high growth years, with no loss of principal.</p>
       </div>
     );
   }
@@ -822,6 +919,71 @@ An Indexed Universal Life policy is arguably the greatest wealth accumulation ve
 `
   }
 ];
+
+const NEW_ARTICLE: EducationItem = {
+  id: 12,
+  title: "Proof IUL Works: A 19-Year-Old IUL Policy",
+  description: "Moving from theory to proof: A real-world examination of a policy that survived the 2008 crash and came out ahead.",
+  type: 'article',
+  duration: '12 min read',
+  category: 'Case Study',
+  image: 'https://picsum.photos/seed/iul-proof/800/600',
+  content: `
+## Proof IUL Works: A 19-Year-Old IUL Policy
+
+If you spend enough time researching Indexed Universal Life (IUL) insurance online, you will inevitably run into critics who claim that these policies never perform as illustrated. They argue that the projections are unrealistic, the fees will eventually eat your cash value, and the policies are destined to fail. 
+
+But as we have explored throughout our Education Library—in articles like [Building an IUL the Correct Way](article:11) and [What is a Maximum Funded IUL?](article:9)—an IUL is only as good as its architect. When built the "Commission Way," it will struggle; but when engineered the "Correct Way," it is arguably the greatest wealth accumulation vehicle on the planet.
+
+Today, we are moving away from theory and hypothetical math. Let's look at the undeniable proof by examining a real-life policy that was put in force 19 years ago.
+
+### The "Perfectly Wrong" Start
+
+If you want to talk about bad timing, this specific policy started off perfectly wrong. Issued back in 2008, the client committed to funding the policy with $44,000 a year.
+
+Almost immediately after his first premium payment, the Great Recession hit, and the global stock market completely crashed. Because the market plummeted, the client received two consecutive years of a 0% index return.
+
+If you were to lay his [actual policy statements](https://www.iulsuccessstories.com/?nav=Stories&story=2) side-by-side with the original illustration—which assumed a steady, positive 5.95% return every single year—he had fallen far behind the plan right out of the gate.
+
+![image](/picture/IUL-Year2.jpg|Detailed view of the policy statement's early years performance.)
+
+### The Power of the 0% Floor
+
+You might expect a client in this scenario to be furious about the lack of growth, but he wasn’t mad at all.
+
+While millions of Americans were watching their traditional risk-based 401(k)s and mutual funds get decimated by 30% to 40% losses, his IUL account didn't lose a single dime to the market. He was thrilled to have his IUL serving as a safe, secure alternative. As we covered in our article [Why IUL?](article:8), this is the exact power of the 0% floor—conquering market risk by ensuring your wealth is never destroyed in a crash. Zero became his hero.
+
+### The Massive Rebound
+
+Because the client didn't suffer any market losses in years one and two, he didn't have to spend the next several years just digging himself out of a massive hole. His money was perfectly positioned at the starting line.
+
+When the market finally rebounded in year three, the client captured a massive 18.8% index credit. Suddenly, in the blink of an eye, his cash value shot past the original illustration. He was now way ahead of his original plan.
+
+[chart:iul-proof-rates]
+
+### Weathering the Storms with Low COIs
+
+As the years went by, the policy continued to perform beautifully. In fact, it even sustained another two consecutive years with 0% credits later on, yet it still remained far ahead of his original, projected plan. 
+
+How is it mathematically possible for a policy to suffer multiple years of 0% returns and still beat a spreadsheet that assumed a steady 6% growth every year? 
+
+It all comes back to the core principles we discussed in our previous articles: [Proper Design](article:11).
+
+This policy was designed to be maximum efficient. The advisor purchased the absolute minimum death benefit the IRS legally allowed and funded it right up to the [7-Pay limit](article:10). Because the death benefit was aggressively squeezed down, the internal Cost of Insurance (COI) charges have stayed incredibly low. For example, even nearly two decades into the policy, the pure insurance charges dragging on the account are tiny—only taking a minuscule fraction of the cash value.
+
+Because the policy wasn't suffocating under the weight of massive, commission-driven fees, the client's money stayed in the account and compounded efficiently during the good market years.
+
+[chart:iul-proof-comparison]
+
+### The Final Verdict
+
+Today, this [19-year-old policy](https://www.iulsuccessstories.com/?nav=Stories&story=2) stands as undeniable proof. You don't have to rely on blind trust or empty marketing promises to believe in Indexed Universal Life.
+
+When you strip away the arbitrarily huge death benefits and build an IUL the right way—maximizing the cash value and minimizing the fees—it operates exactly as expected. It protects you from market crashes, captures upside growth, and serves as the ultimate financial fortress for your family.
+`
+};
+
+EDUCATION_CONTENT.push(NEW_ARTICLE);
 
   const STORIES: SuccessStory[] = [
   { 
