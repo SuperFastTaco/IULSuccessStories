@@ -869,18 +869,18 @@ An Indexed Universal Life policy is arguably the greatest wealth accumulation ve
   },
   { 
     id: 2, 
-    title: "17-year-old policy with 6% cumulative interest return", 
+    title: "19-year-old policy ahead of schedule", 
     age: 57, 
-    policyYears: 18, 
-    return: "6.87%", 
+    policyYears: 19, 
+    return: "8.94%", 
     category: "Stability",
     details: {
       totalPremium: "$220,000",
-      indexRate: "6.87%",
-      interestCredited: "$28,626",
-      accumulationValue: "$445,940",
+      indexRate: "8.94%",
+      interestCredited: "$39,909",
+      accumulationValue: "$482,947",
       deathBenefit: "$715,000",
-      costOfInsurance: "$2,785"
+      costOfInsurance: "$2,813"
     },
     actualLedger: [
       { year: 2008, premium: "44,000", rate: "0.00%", accum: "36,009", deathBenefit: "715,000" },
@@ -901,6 +901,7 @@ An Indexed Universal Life policy is arguably the greatest wealth accumulation ve
       { year: 2023, premium: "0", rate: "0%", accum: "384,827", deathBenefit: "715,000" },
       { year: 2024, premium: "0", rate: "9.10%", accum: "418,476", deathBenefit: "715,000" },
       { year: 2025, premium: "0", rate: "6.87%", accum: "445,940", deathBenefit: "715,000" },
+      { year: 2026, premium: "0", rate: "8.94%", accum: "482,947", deathBenefit: "715,000" },
     ],
     illustratedLedger: [
       { year: 1, premium: "44,000", rate: "5.95%", accum: "38,308", deathBenefit: "715,000" },
@@ -921,10 +922,11 @@ An Indexed Universal Life policy is arguably the greatest wealth accumulation ve
       { year: 16, premium: "0", rate: "5.95%", accum: "372,372", deathBenefit: "487,698" },
       { year: 17, premium: "0", rate: "5.95%", accum: "391,805", deathBenefit: "446,192" },
       { year: 18, premium: "0", rate: "5.95%", accum: "433,299", deathBenefit: "401,971" },
+      { year: 19, premium: "0", rate: "5.95%", accum: "455,641", deathBenefit: "375,584" },
     ],
     actualTotals: { premium: "220,000", rate: "6.11%" },
     illustratedTotals: { premium: "220,000", rate: "5.95%" },
-    finalAnalysis: "This policy was issued in 2008 and has been active for 18 years. With a total premium of $220,000 paid over the first 5 years, the policy has grown to an accumulation value of $445,940. Despite several years of 0% interest credits, the policy has achieved a cumulative average return of approximately 6.11%, outperforming the original illustration's projection of $433,299. This demonstrates the stability and long-term growth potential of the IUL product even through volatile market cycles."
+    finalAnalysis: "This policy was issued in 2008 and has been active for 19 years. With a total premium of $220,000 paid over the first 5 years, the policy has grown to an accumulation value of $482,947. Despite several years of 0% interest credits, the policy has achieved a cumulative average return of approximately 6.11%, outperforming the original illustration's projection of $455,641. This demonstrates the stability and long-term growth potential of the IUL product even through volatile market cycles."
   },
   { 
     id: 3, 
