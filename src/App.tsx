@@ -3213,9 +3213,9 @@ export default function App() {
                   >
                     <div className="relative">
                       <div className="absolute -inset-4 bg-gradient-to-tr from-primary to-accent opacity-10 blur-2xl rounded-[3rem]" />
-                      <div className="relative rounded-[2.5rem] overflow-hidden aspect-video bg-slate-900 shadow-2xl border-8 border-white/10">
+                      <div className="relative rounded-3xl overflow-hidden aspect-video bg-slate-900 shadow-2xl border-8 border-white/10">
                         <iframe 
-                          className="w-full h-full"
+                          className="w-full h-full scale-[1.02]"
                           src="https://www.youtube.com/embed/7qev12ABwwU?rel=0&modestbranding=1" 
                           title="IUL Success Stories Intro"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
