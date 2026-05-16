@@ -3216,8 +3216,8 @@ export default function App() {
                       <div className="relative rounded-[2.5rem] overflow-hidden aspect-video bg-slate-900 shadow-2xl border-8 border-white/10">
                         <iframe 
                           className="w-full h-full"
-                          src="https://www.youtube.com/embed/Kpjh_WD4J5o?autoplay=0&rel=0" 
-                          title="IUL Success Stories Overview"
+                          src="https://www.youtube.com/embed/7qev12ABwwU?rel=0&modestbranding=1" 
+                          title="IUL Success Stories Intro"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                           allowFullScreen
                         ></iframe>
