@@ -2887,12 +2887,9 @@ export default function App() {
 
   const ContactPage = () => {
     const [formData, setFormData] = useState({
-      firstName: '',
-      lastName: '',
+      name: '',
       email: '',
-      phone: '',
-      zip: '',
-      message: ''
+      feedback: ''
     });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
@@ -2907,7 +2904,10 @@ export default function App() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            ...formData,
+            firstName: formData.name,
+            email: formData.email,
+            message: formData.feedback,
+            eventName: 'Contact',
             url: window.location.href,
             clientUserAgent: navigator.userAgent,
           }),
@@ -2915,7 +2915,7 @@ export default function App() {
 
         if (response.ok) {
           setStatus('success');
-          setFormData({ firstName: '', lastName: '', email: '', phone: '', zip: '', message: '' });
+          setFormData({ name: '', email: '', feedback: '' });
         } else {
           setStatus('error');
         }
@@ -2929,10 +2929,21 @@ export default function App() {
       <div className="py-12 bg-white dark:bg-slate-950">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900 dark:text-white">Connect with an <span className="text-primary">IUL Expert</span></h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
-              Have questions about the case studies or want to see how an IUL could work for you? Send us a message and we'll be in touch.
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 dark:text-white">Our <span className="text-primary">Philosophy</span></h1>
+            <div className="space-y-6 text-lg text-slate-600 dark:text-slate-400 text-left max-w-2xl mx-auto">
+              <p>
+                I didn't create this site to generate leads or find new clients. This platform is dedicated purely to informing and educating people about how Index Universal Life (IUL) actually works when designed correctly.
+              </p>
+              <p>
+                I believe that many opinions in the financial world are clouded by self-interest. When a professional's livelihood depends on whether or not you buy the specific product they are recommending, there is an inherent conflict of interest. 
+              </p>
+              <p>
+                My goal is to remove the "sales" from the equation and provide a transparent, data-driven look at real performance. This site is my way of providing the truth about these policies without the pressure of a traditional sales pitch.
+              </p>
+              <p className="font-medium text-slate-900 dark:text-white border-t border-slate-100 dark:border-slate-800 pt-6">
+                If you have feedback about the site or the information provided, I'd love to hear from you.
+              </p>
+            </div>
           </div>
 
           {status === 'success' ? (
@@ -2944,88 +2955,57 @@ export default function App() {
               <div className="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-6">
                 <ShieldCheck size={40} />
               </div>
-              <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Message Sent!</h2>
+              <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Feedback Received!</h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
-                Thank you for reaching out. An expert will review your information and contact you shortly.
+                Thank you for your feedback! I appreciate you taking the time to share your thoughts on the site.
               </p>
               <button 
                 onClick={() => setStatus('idle')}
                 className="stitch-button bg-primary text-white"
               >
-                Send Another Message
+                Send More Feedback
               </button>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">First Name</label>
-                  <input 
-                    required
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Last Name</label>
-                  <input 
-                    required
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Email Address</label>
-                  <input 
-                    required
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Phone Number</label>
-                  <input 
-                    required
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6 bg-slate-50 dark:bg-slate-900/50 p-8 md:p-12 rounded-[3.5rem] border border-slate-100 dark:border-slate-800">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Zip Code</label>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Your Name</label>
                 <input 
                   required
                   type="text"
-                  value={formData.zip}
-                  onChange={(e) => setFormData({...formData, zip: e.target.value})}
-                  className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="How should I address you?"
+                  className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">How can we help?</label>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Email Address</label>
+                <input 
+                  required
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="Where can I reach you if needed?"
+                  className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Your Feedback</label>
                 <textarea 
-                  rows={4}
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                  required
+                  rows={6}
+                  value={formData.feedback}
+                  onChange={(e) => setFormData({...formData, feedback: e.target.value})}
+                  placeholder="Share your thoughts, questions, or suggestions about the site..."
+                  className="w-full px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
                 ></textarea>
               </div>
 
               {status === 'error' && (
-                <p className="text-red-500 font-bold text-center">There was an error sending your message. Please try again.</p>
+                <p className="text-red-500 font-bold text-center">There was an error sending your feedback. Please try again.</p>
               )}
 
               <button 
@@ -3039,7 +3019,7 @@ export default function App() {
                     Sending...
                   </>
                 ) : (
-                  'Submit Request'
+                  'Send Feedback'
                 )}
               </button>
             </form>
