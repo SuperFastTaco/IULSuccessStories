@@ -26,7 +26,8 @@ import {
   ExternalLink,
   Link as LinkIcon,
   Check,
-  Share2
+  Share2,
+  Calculator
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -1558,6 +1559,7 @@ export default function App() {
     { label: "Home" },
     { label: "Stories" },
     { label: "Education" },
+    { label: "Calculator" },
     { label: "Contact" }
   ];
 
@@ -2885,6 +2887,110 @@ export default function App() {
     );
   };
 
+  const CalculatorPage = () => {
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
+
+    return (
+      <div className="py-16 md:py-24 bg-[#F9F9F9] dark:bg-slate-900/40 min-h-screen">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-6 dark:bg-primary/20"
+            >
+              <Calculator size={14} />
+              <span>Coming Soon</span>
+            </motion.div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-6xl font-bold mb-8 text-slate-900 dark:text-white"
+            >
+              The Interactive <span className="text-primary">IUL Calculator</span>
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed"
+            >
+              We are building a robust, transparent planning tool to let you model maximum-funded solutions, compare index scenarios, and see the mathematical power of the 0% floor first-hand.
+            </motion.p>
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 relative overflow-hidden shadow-xl"
+          >
+            {/* Ambient subtle glow background */}
+            <div className="absolute top-[-20%] right-[-20%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px]" />
+            <div className="absolute bottom-[-20%] left-[-20%] w-[300px] h-[300px] bg-accent/5 rounded-full blur-[80px]" />
+
+            <div className="relative z-10">
+              <h3 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-primary/10 text-primary dark:bg-primary/20">
+                  <TrendingUp size={20} />
+                </span>
+                What We're Engineering
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
+                  <div className="text-primary font-bold text-lg mb-2">01. Maximum Efficiency Modeling</div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Compare policies engineered the "Commission Way" versus the maximum-funded, minimum-death-benefit "Correct Way." See exactly how the cost of insurance (COI) drops and allows cash values to compound.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
+                  <div className="text-primary font-bold text-lg mb-2">02. Historical Performance Testing</div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Stress-test your hypothetical numbers using real S&P 500 growth sequences and interest caps from actual historical years, including 2008 and 2020.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
+                  <div className="text-primary font-bold text-lg mb-2">03. Expense & Fee Breakdown</div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Analyze internal administrative costs, premium loads, and cost of insurance charges under standard IRS guidelines. We prioritize complete fee transparency.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
+                  <div className="text-primary font-bold text-lg mb-2">04. Income Simulator</div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Model tax-free retirement distributions using standard policy loans versus participating variable loans, mapping out clear cash-on-cash return scenarios.
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center pt-8 border-t border-slate-200/50 dark:border-slate-800/50">
+                <p className="text-slate-600 dark:text-slate-400 mb-6 font-medium">
+                  Have ideas on features you want to see in the calculator?
+                </p>
+                <button 
+                  onClick={() => {
+                    setActiveNav("Contact");
+                    window.scrollTo(0, 0);
+                  }}
+                  className="stitch-button bg-primary text-white inline-flex items-center gap-2 hover:bg-primary-hover shadow-lg shadow-primary/25 cursor-pointer"
+                >
+                  Request Feature / Share Feedback
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  };
+
   const ContactPage = () => {
     const [formData, setFormData] = useState({
       name: '',
@@ -3338,6 +3444,8 @@ export default function App() {
           </>
         ) : activeNav === "Contact" ? (
           <ContactPage />
+        ) : activeNav === "Calculator" ? (
+          <CalculatorPage />
         ) : (
           <div className="py-32 text-center">
             <h2 className="text-3xl font-bold mb-4">{activeNav} Page</h2>
