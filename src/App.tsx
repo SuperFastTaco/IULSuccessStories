@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Moon, 
   Sun, 
@@ -2888,102 +2888,857 @@ export default function App() {
   };
 
   const CalculatorPage = () => {
+    const [payload, setPayload] = useState<any>(null);
+    const [seriesMaps, setSeriesMaps] = useState<Map<string, Map<string, number>> | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Selected state options
+    const [selectedIndexName, setSelectedIndexName] = useState<string>("S&P 500 Price Index (^GSPC)");
+    const [capMode, setCapMode] = useState<"Capped" | "No Cap">("Capped");
+    const [capRate, setCapRate] = useState<number>(12.25);
+    const [participationRate, setParticipationRate] = useState<number>(100);
+    const [floorRate, setFloorRate] = useState<number>(0);
+    const [rollingYears, setRollingYears] = useState<number>(20);
+
     useEffect(() => {
       window.scrollTo(0, 0);
     }, []);
 
+    // Date Helper matching workbook index mapping
+    const addYears = (isoDate: string, years: number): string => {
+      const parts = isoDate.split("-");
+      if (parts.length !== 3) return isoDate;
+      const year = Number(parts[0]);
+      const month = Number(parts[1]);
+      const day = Number(parts[2]);
+      
+      const targetYear = year + years;
+      // Get days in the target month (month is 1-indexed in split, passing it directly as UTC month gets last day of ISO month)
+      const daysInTargetMonth = new Date(Date.UTC(targetYear, month, 0)).getUTCDate();
+      const targetDay = Math.min(day, daysInTargetMonth);
+      
+      return [
+        targetYear,
+        String(month).padStart(2, "0"),
+        String(targetDay).padStart(2, "0")
+      ].join("-");
+    };
+
+    // Fast loading and map builder for O(1) lookups
+    useEffect(() => {
+      setIsLoading(true);
+      setError(null);
+      fetch('/calculator/index-series.json')
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to load historical index series database.");
+          return res.json();
+        })
+        .then((data: any) => {
+          setPayload(data);
+          
+          const maps = new Map<string, Map<string, number>>();
+          Object.entries(data.series).forEach(([name, rows]) => {
+            const rowList = rows as [string, number][];
+            const dateMap = new Map<string, number>(rowList);
+            maps.set(name, dateMap);
+          });
+          setSeriesMaps(maps);
+          setIsLoading(false);
+          
+          if (data.indexes && data.indexes.length > 0) {
+            setSelectedIndexName(data.indexes[0].name);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          setError(err.message || "Failed to load index series.");
+          setIsLoading(false);
+        });
+    }, []);
+
+    // Get metadata of current selection
+    const activeMetadata = useMemo(() => {
+      if (!payload || !payload.indexes) return null;
+      return payload.indexes.find((idx: any) => idx.name === selectedIndexName) || null;
+    }, [payload, selectedIndexName]);
+
+    const maxYearsForIndex = activeMetadata ? activeMetadata.maxRollingYears : 20;
+
+    // Automatically adjust rolling years if selection changes and exceeds limit
+    useEffect(() => {
+      if (rollingYears > maxYearsForIndex) {
+        setRollingYears(maxYearsForIndex);
+      }
+    }, [selectedIndexName, maxYearsForIndex, rollingYears]);
+
+    // Live calculations calculated in real-time
+    const results = useMemo(() => {
+      if (!payload || !seriesMaps || !activeMetadata) return null;
+      
+      const rows = payload.series[selectedIndexName];
+      const levelByDate = seriesMaps.get(selectedIndexName);
+      if (!rows || !levelByDate) return null;
+
+      const years = rollingYears;
+      const cap = capRate / 100;
+      const participation = participationRate / 100;
+      const floor = floorRate / 100;
+      const lastDate = activeMetadata.lastDate;
+
+      const averages: number[] = [];
+      const compounds: number[] = [];
+      const indexCagrs: number[] = [];
+      let outperformedCount = 0;
+
+      // Sliding window logic
+      for (const [startDate, startLevel] of rows) {
+        // Find terminating date
+        const endDate = addYears(startDate, years);
+        if (endDate > lastDate) {
+          break;
+        }
+
+        const annualCredits: number[] = [];
+        const annualReturns: number[] = [];
+        let hasCompletePeriod = true;
+
+        for (let year = 1; year <= years; year += 1) {
+          const periodStart = addYears(startDate, year - 1);
+          const periodEnd = addYears(startDate, year);
+          const periodStartLevel = levelByDate.get(periodStart);
+          const periodEndLevel = levelByDate.get(periodEnd);
+
+          if (!periodStartLevel || !periodEndLevel) {
+            hasCompletePeriod = false;
+            break;
+          }
+
+          const rawReturn = periodEndLevel / periodStartLevel - 1;
+          const participatedReturn = rawReturn * participation;
+          const credit =
+            capMode === "No Cap"
+              ? Math.max(floor, participatedReturn)
+              : Math.min(cap, Math.max(floor, participatedReturn));
+
+          annualReturns.push(rawReturn);
+          annualCredits.push(credit);
+        }
+
+        if (!hasCompletePeriod || annualCredits.length !== years) {
+          continue;
+        }
+
+        const averageCredit = annualCredits.reduce((sum, c) => sum + c, 0) / years;
+        const indexedGrowth = annualCredits.reduce((growth, credit) => growth * (1 + credit), 1);
+        const indexGrowth = annualReturns.reduce((growth, rawReturn) => growth * (1 + rawReturn), 1);
+
+        const indexedCagrVal = Math.pow(indexedGrowth, 1 / years) - 1;
+        const indexCagrVal = Math.pow(indexGrowth, 1 / years) - 1;
+
+        averages.push(averageCredit);
+        compounds.push(indexedCagrVal);
+        indexCagrs.push(indexCagrVal);
+
+        if (indexedGrowth > indexGrowth) {
+          outperformedCount += 1;
+        }
+      }
+
+      if (averages.length === 0) {
+        return {
+          count: 0,
+          threshold80: null,
+          threshold90: null,
+          threshold100: null,
+          averageReturn: null,
+          maxReturn: null,
+          compoundReturn: null,
+          indexCagr: null,
+          outperformed: null,
+          chartDataPoints: []
+        };
+      }
+
+      // Downsample chart data points to keep Recharts incredibly responsive (~300 points max)
+      const chartDataPoints: any[] = [];
+      const totalPeriods = averages.length;
+      const step = Math.max(1, Math.round(totalPeriods / 300));
+
+      for (let i = 0; i < totalPeriods; i += step) {
+        chartDataPoints.push({
+          date: rows[i][0],
+          indexedCagr: Number((compounds[i] * 100).toFixed(2)),
+          indexCagr: Number((indexCagrs[i] * 100).toFixed(2))
+        });
+      }
+
+      const sum = (arr: number[]) => arr.reduce((total, val) => total + val, 0);
+      const averageVal = (arr: number[]) => sum(arr) / arr.length;
+      const ordered = [...averages].sort((a, b) => a - b);
+      
+      const thresholdValue = (orderedVals: number[], successRate: number) => {
+        const idx = Math.trunc((1 - successRate) * (orderedVals.length - 1));
+        return orderedVals[idx];
+      };
+
+      return {
+        count: totalPeriods,
+        threshold85: thresholdValue(ordered, 0.85),
+        threshold95: thresholdValue(ordered, 0.95),
+        threshold80: thresholdValue(ordered, 0.80),
+        threshold90: thresholdValue(ordered, 0.90),
+        threshold100: Math.min(...averages),
+        averageReturn: averageVal(averages),
+        maxReturn: Math.max(...averages),
+        compoundReturn: averageVal(compounds),
+        indexCagr: averageVal(indexCagrs),
+        outperformed: outperformedCount / totalPeriods,
+        chartDataPoints
+      };
+    }, [payload, seriesMaps, selectedIndexName, capMode, capRate, participationRate, floorRate, rollingYears, activeMetadata]);
+
+    const formatDate = (iso: string) => {
+      if (!iso) return "";
+      const parts = iso.split("-");
+      if (parts.length !== 3) return iso;
+      return `${parts[1]}/${parts[2]}/${parts[0]}`;
+    };
+
+    if (isLoading) {
+      return (
+        <div className="py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen flex items-center justify-center">
+          <div className="text-center p-8 glass-card rounded-3xl max-w-sm mx-auto">
+            <div className="relative w-16 h-16 mx-auto mb-6">
+              <span className="absolute inset-0 border-4 border-primary/25 rounded-full" />
+              <span className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-950 dark:text-white mb-2">Analyzing Data Series</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Loading daily closures and building historical rolling backtester...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen flex items-center justify-center">
+          <div className="text-center p-10 glass-card rounded-3xl max-w-md mx-auto">
+            <div className="w-16 h-16 bg-red-150 dark:bg-red-950 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Info size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-950 dark:text-white mb-3">Database Load Error</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="stitch-button bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25 cursor-pointer"
+            >
+              Retry Loading Database
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="py-16 md:py-24 bg-[#F9F9F9] dark:bg-slate-900/40 min-h-screen">
-        <div className="max-w-4xl mx-auto px-6">
+      <div className="py-16 md:py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
           <div className="text-center mb-16">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-6 dark:bg-primary/20"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 text-primary text-xs font-bold mb-6 dark:bg-primary/20"
             >
               <Calculator size={14} />
-              <span>Coming Soon</span>
+              <span>Interactive Analytics Platform</span>
             </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-6xl font-bold mb-8 text-slate-900 dark:text-white"
+              className="text-4xl md:text-5xl font-bold mb-6 text-slate-950 dark:text-white"
             >
-              The Interactive <span className="text-primary">IUL Calculator</span>
+              Historical <span className="text-primary">IUL Backtesting</span> Simulator
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed"
+              className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed"
             >
-              We are building a robust, transparent planning tool to let you model maximum-funded solutions, compare index scenarios, and see the mathematical power of the 0% floor first-hand.
+              Stress-test Indexed Universal Life scenarios across 35+ years of historical market data. Toggle indices, caps, and participation rates to see how the mathematical floor shields and compounds your cash value.
             </motion.p>
           </div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 relative overflow-hidden shadow-xl"
-          >
-            {/* Ambient subtle glow background */}
-            <div className="absolute top-[-20%] right-[-20%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px]" />
-            <div className="absolute bottom-[-20%] left-[-20%] w-[300px] h-[300px] bg-accent/5 rounded-full blur-[80px]" />
-
-            <div className="relative z-10">
-              <h3 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white flex items-center gap-3">
-                <span className="p-2 rounded-xl bg-primary/10 text-primary dark:bg-primary/20">
-                  <TrendingUp size={20} />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
+            {/* Control Panel (Sliders and Options) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-12 xl:col-span-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden"
+            >
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5 mb-8 pb-4 border-b border-slate-150/50 dark:border-slate-800/50">
+                <span className="p-1.5 rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+                  <Calculator size={18} />
                 </span>
-                What We're Engineering
+                Strategy Parameters
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
-                  <div className="text-primary font-bold text-lg mb-2">01. Maximum Efficiency Modeling</div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Compare policies engineered the "Commission Way" versus the maximum-funded, minimum-death-benefit "Correct Way." See exactly how the cost of insurance (COI) drops and allows cash values to compound.
-                  </p>
+              <div className="space-y-6">
+                {/* Select Index */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                    1. Reference Index Series
+                  </label>
+                  <select 
+                    value={selectedIndexName}
+                    onChange={(e) => setSelectedIndexName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-medium text-slate-950 dark:text-white cursor-pointer"
+                  >
+                    {payload?.indexes.map((idx: any) => (
+                      <option key={idx.name} value={idx.name}>
+                        {idx.name}
+                      </option>
+                    ))}
+                  </select>
+                  {activeMetadata && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 ml-1 leading-normal">
+                      Available: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatDate(activeMetadata.firstDate)}</span> to <span className="font-semibold text-slate-700 dark:text-slate-300">{formatDate(activeMetadata.lastDate)}</span> (Max {activeMetadata.maxRollingYears} Years).
+                    </p>
+                  )}
                 </div>
 
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
-                  <div className="text-primary font-bold text-lg mb-2">02. Historical Performance Testing</div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Stress-test your hypothetical numbers using real S&P 500 growth sequences and interest caps from actual historical years, including 2008 and 2020.
-                  </p>
+                {/* Cap Mode Toggle */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                    2. Interest Crediting Cap
+                  </label>
+                  <div className="grid grid-cols-2 p-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                    <button 
+                      type="button"
+                      onClick={() => setCapMode("Capped")}
+                      className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                        capMode === "Capped" 
+                          ? "bg-primary text-white shadow-sm" 
+                          : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+                      }`}
+                    >
+                      Capped Rate
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setCapMode("No Cap")}
+                      className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                        capMode === "No Cap" 
+                          ? "bg-primary text-white shadow-sm" 
+                          : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+                      }`}
+                    >
+                      Uncapped / No Cap
+                    </button>
+                  </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
-                  <div className="text-primary font-bold text-lg mb-2">03. Expense & Fee Breakdown</div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Analyze internal administrative costs, premium loads, and cost of insurance charges under standard IRS guidelines. We prioritize complete fee transparency.
-                  </p>
+                {/* Cap Rate Slider */}
+                {capMode === "Capped" && (
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        Cap Rate (%)
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <input 
+                          type="number" 
+                          step="0.05"
+                          min="0"
+                          max="25"
+                          value={capRate}
+                          onChange={(e) => setCapRate(Number(e.target.value))}
+                          className="w-16 px-2 py-1 text-right text-xs bg-slate-50 border border-slate-200 dark:border-slate-850 dark:bg-slate-950 rounded-lg font-bold text-slate-950 dark:text-white"
+                        />
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-550">%</span>
+                      </div>
+                    </div>
+                    <input 
+                      type="range"
+                      min="1"
+                      max="25"
+                      step="0.25"
+                      value={capRate}
+                      onChange={(e) => setCapRate(Number(e.target.value))}
+                      className="w-full accent-primary h-1.5 bg-slate-100 dark:bg-slate-950 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {/* Participation Rate Slider */}
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      Participation Rate (%)
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="number" 
+                        step="1"
+                        min="0"
+                        max="300"
+                        value={participationRate}
+                        onChange={(e) => setParticipationRate(Number(e.target.value))}
+                        className="w-16 px-2 py-1 text-right text-xs bg-slate-50 border border-slate-200 dark:border-slate-850 dark:bg-slate-950 rounded-lg font-bold text-slate-950 dark:text-white"
+                      />
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-550">%</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="range"
+                    min="10"
+                    max="200"
+                    step="5"
+                    value={participationRate}
+                    onChange={(e) => setParticipationRate(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 bg-slate-100 dark:bg-slate-950 rounded-lg cursor-pointer"
+                  />
                 </div>
 
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 shadow-sm col-span-1">
-                  <div className="text-primary font-bold text-lg mb-2">04. Income Simulator</div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Model tax-free retirement distributions using standard policy loans versus participating variable loans, mapping out clear cash-on-cash return scenarios.
-                  </p>
+                {/* Floor Rate Slider */}
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      Floor Rate (%)
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        min="0"
+                        max="10"
+                        value={floorRate}
+                        onChange={(e) => setFloorRate(Number(e.target.value))}
+                        className="w-16 px-2 py-1 text-right text-xs bg-slate-50 border border-slate-200 dark:border-slate-850 dark:bg-slate-950 rounded-lg font-bold text-slate-950 dark:text-white"
+                      />
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-550">%</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value={floorRate}
+                    onChange={(e) => setFloorRate(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 bg-slate-100 dark:bg-slate-950 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {/* Rolling Years Slider */}
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      Rolling Backtest Term (Years)
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-xs text-slate-950 dark:text-white">{rollingYears}</span>
+                      <span className="text-xs font-bold text-slate-400">Years</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="range"
+                    min="1"
+                    max={maxYearsForIndex}
+                    step="1"
+                    value={rollingYears}
+                    onChange={(e) => setRollingYears(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 bg-slate-100 dark:bg-slate-950 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold">
+                    <span>1 Year</span>
+                    <span>{maxYearsForIndex} Years (Max)</span>
+                  </div>
                 </div>
               </div>
+            </motion.div>
 
-              <div className="text-center pt-8 border-t border-slate-200/50 dark:border-slate-800/50">
-                <p className="text-slate-600 dark:text-slate-400 mb-6 font-medium">
-                  Have ideas on features you want to see in the calculator?
+            {/* Quick Metrics (Summary Snapshot Panel) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="lg:col-span-12 xl:col-span-7 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl space-y-6"
+            >
+              {results && results.count > 0 ? (
+                <div className="space-y-6">
+                  {/* Results Header */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                      <span className="text-xs font-bold text-[#83AE62] uppercase tracking-wider block mb-1">
+                        RESULTS
+                      </span>
+                      <h2 className="text-2xl md:text-3xl font-black text-slate-950 dark:text-white tracking-tight">
+                        Historical Crediting Snapshot
+                      </h2>
+                    </div>
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2 sm:mt-0 font-mono">
+                      {results?.count?.toLocaleString()} complete {rollingYears}-year periods
+                    </div>
+                  </div>
+
+                  {/* SVG Circles Gauges Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 xl:gap-12 items-start justify-items-center pt-3 pb-8 border-b border-slate-100 dark:border-slate-800/80">
+                    
+                    {/* Circle 1: 80% */}
+                    <div className="flex flex-col items-center text-center w-full">
+                      <div className="relative w-44 h-44 sm:w-48 sm:h-48 md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] xl:w-[240px] xl:h-[240px] flex items-center justify-center transition-all">
+                        <svg viewBox="0 0 120 120" className="w-full h-full">
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#E2E8F0"
+                            className="dark:stroke-slate-800/50"
+                            strokeWidth="5"
+                            strokeDasharray="231.2 57.8"
+                            strokeLinecap="round"
+                            transform="rotate(-54 60 60)"
+                          />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#83AE62"
+                            strokeWidth="6.5"
+                            strokeDasharray="231.2 57.8"
+                            strokeLinecap="round"
+                            transform="rotate(-54 60 60)"
+                          />
+                          <g className="filter drop-shadow-sm">
+                            <circle cx="14" cy="60" r="13" fill="#83AE62" />
+                            <text 
+                              x="14" 
+                              y="63.5" 
+                              textAnchor="middle" 
+                              fill="#FFFFFF" 
+                              fontSize="9px" 
+                              fontWeight="900"
+                              fontFamily="system-ui, sans-serif"
+                            >
+                              80%
+                            </text>
+                          </g>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                          <span className="text-2xl sm:text-3xl md:text-3xl lg:text-[2.2rem] xl:text-[2.5rem] font-sans font-black text-slate-950 dark:text-white tracking-tighter leading-none">
+                            {(results.threshold80 * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-4 leading-normal text-center max-w-[210px]">
+                        80% of the {rollingYears}-year periods would have received at least this annual return.
+                      </span>
+                    </div>
+
+                    {/* Circle 2: 90% */}
+                    <div className="flex flex-col items-center text-center w-full">
+                      <div className="relative w-44 h-44 sm:w-48 sm:h-48 md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] xl:w-[240px] xl:h-[240px] flex items-center justify-center transition-all">
+                        <svg viewBox="0 0 120 120" className="w-full h-full">
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#E2E8F0"
+                            className="dark:stroke-slate-800/50"
+                            strokeWidth="5"
+                            strokeDasharray="260.1 28.9"
+                            strokeLinecap="round"
+                            transform="rotate(-72 60 60)"
+                          />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#83AE62"
+                            strokeWidth="6.5"
+                            strokeDasharray="260.1 28.9"
+                            strokeLinecap="round"
+                            transform="rotate(-72 60 60)"
+                          />
+                          <g className="filter drop-shadow-sm">
+                            <circle cx="14" cy="60" r="13" fill="#83AE62" />
+                            <text 
+                              x="14" 
+                              y="63.5" 
+                              textAnchor="middle" 
+                              fill="#FFFFFF" 
+                              fontSize="9px" 
+                              fontWeight="900"
+                              fontFamily="system-ui, sans-serif"
+                            >
+                              90%
+                            </text>
+                          </g>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                          <span className="text-2xl sm:text-3xl md:text-3xl lg:text-[2.2rem] xl:text-[2.5rem] font-sans font-black text-slate-950 dark:text-white tracking-tighter leading-none">
+                            {(results.threshold90 * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-4 leading-normal text-center max-w-[210px]">
+                        90% of the {rollingYears}-year periods would have received at least this annual return.
+                      </span>
+                    </div>
+
+                    {/* Circle 3: 100% */}
+                    <div className="flex flex-col items-center text-center w-full">
+                      <div className="relative w-44 h-44 sm:w-48 sm:h-48 md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] xl:w-[240px] xl:h-[240px] flex items-center justify-center transition-all">
+                        <svg viewBox="0 0 120 120" className="w-full h-full">
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#E2E8F0"
+                            className="dark:stroke-slate-800/50"
+                            strokeWidth="5"
+                          />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="46"
+                            fill="none"
+                            stroke="#83AE62"
+                            strokeWidth="6.5"
+                          />
+                          <g className="filter drop-shadow-sm">
+                            <circle cx="14" cy="60" r="13" fill="#83AE62" />
+                            <text 
+                              x="14" 
+                              y="63.5" 
+                              textAnchor="middle" 
+                              fill="#FFFFFF" 
+                              fontSize="9px" 
+                              fontWeight="900"
+                              fontFamily="system-ui, sans-serif"
+                            >
+                              100%
+                            </text>
+                          </g>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                          <span className="text-2xl sm:text-3xl md:text-3xl lg:text-[2.2rem] xl:text-[2.5rem] font-sans font-black text-slate-950 dark:text-white tracking-tighter leading-none">
+                            {(results.threshold100 * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-4 leading-normal text-center max-w-[210px]">
+                        100% of the {rollingYears}-year periods would have received at least this annual return.
+                      </span>
+                    </div>
+
+                  </div>
+
+                  {/* Two Large Return Highlight Panels */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                    {/* Max Return Box */}
+                    <div className="bg-[#83AE62] border border-[#719B51] text-white p-6 md:p-8 rounded-3xl flex flex-col items-center text-center shadow-sm relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                      <div className="text-4xl md:text-5xl font-black mb-2 leading-none font-display">
+                        {(results.maxReturn * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-[11px] font-black uppercase tracking-widest text-[#EAF5E9] mb-2 font-mono">
+                        MAXIMUM RETURN
+                      </div>
+                      <p className="text-xs text-[#F2FAED] leading-relaxed max-w-sm">
+                        Highest annual average return across the selected rolling periods.
+                      </p>
+                    </div>
+
+                    {/* Avg Return Box */}
+                    <div className="bg-[#83AE62] border border-[#719B51] text-white p-6 md:p-8 rounded-3xl flex flex-col items-center text-center shadow-sm relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                      <div className="text-4xl md:text-5xl font-black mb-2 leading-none font-display">
+                        {(results.averageReturn * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-[11px] font-black uppercase tracking-widest text-[#EAF5E9] mb-2 font-mono">
+                        AVERAGE RETURN
+                      </div>
+                      <p className="text-xs text-[#F2FAED] leading-relaxed max-w-sm">
+                        Average annual credited return across the selected rolling periods.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Three Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                    {/* Average Compound Return */}
+                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 font-mono block">
+                        AVERAGE COMPOUND RETURN
+                      </span>
+                      <span className="text-xl md:text-2xl font-black text-slate-950 dark:text-white leading-none">
+                        {(results.compoundReturn * 100).toFixed(2)}%
+                      </span>
+                    </div>
+
+                    {/* Average Index CAGR */}
+                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 font-mono block">
+                        AVERAGE INDEX CAGR
+                      </span>
+                      <span className="text-xl md:text-2xl font-black text-slate-950 dark:text-white leading-none">
+                        {(results.indexCagr * 100).toFixed(2)}%
+                      </span>
+                    </div>
+
+                    {/* Outperformed Index */}
+                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 font-mono block">
+                        OUTPERFORMED INDEX
+                      </span>
+                      <span className="text-xl md:text-2xl font-black text-slate-950 dark:text-white leading-none">
+                        {(results.outperformed * 100).toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <p className="text-slate-500 font-medium">Select parameters to see matching historical backtests.</p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Interactive CAGR Chart Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 35 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden mb-12"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-950 dark:text-white">
+                  Compound CAGR History Comparison List
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Plotting the compounding annualized returns (%) of {rollingYears}-year rolling terms chronologically by period start dates.
                 </p>
-                <button 
-                  onClick={() => {
-                    setActiveNav("Contact");
-                    window.scrollTo(0, 0);
-                  }}
-                  className="stitch-button bg-primary text-white inline-flex items-center gap-2 hover:bg-primary-hover shadow-lg shadow-primary/25 cursor-pointer"
-                >
-                  Request Feature / Share Feedback
-                  <ArrowRight size={16} />
-                </button>
               </div>
+              <div className="flex gap-4 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-slate-950 p-2 border border-slate-150 dark:border-slate-850 rounded-xl">
+                <span className="flex items-center gap-2">
+                  <span className="inline-block w-3 h-3 rounded-full bg-primary" />
+                  Indexed Strategy (IUL)
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="inline-block w-3 h-3 bg-slate-400 dark:bg-slate-600 rounded-full" />
+                  Market Index
+                </span>
+              </div>
+            </div>
+
+            {results && results.chartDataPoints && results.chartDataPoints.length > 0 ? (
+              <div className="h-96 w-full pt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={results.chartDataPoints}
+                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:hidden" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" className="hidden dark:block" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(val) => val.substring(0, 4)} 
+                      stroke="#94A3B8"
+                      fontSize={11}
+                      fontWeight="bold"
+                    />
+                    <YAxis 
+                      tickFormatter={(val) => `${val}%`}
+                      stroke="#94A3B8"
+                      fontSize={11}
+                      fontWeight="bold"
+                    />
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [
+                        `${value}%`, 
+                        name === "indexedCagr" ? "Indexed Strategy CAGR" : "Market Index CAGR"
+                      ]}
+                      labelFormatter={(label) => `Backtest Start Date: ${formatDate(String(label))}`}
+                      contentStyle={{
+                        backgroundColor: "#1E293B",
+                        borderRadius: "1rem",
+                        border: "none",
+                        color: "#fff",
+                        fontSize: "12px",
+                        boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)"
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="indexedCagr" 
+                      stroke="#83AE62" 
+                      strokeWidth={3} 
+                      dot={false}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="indexCagr" 
+                      stroke="#94A3B8" 
+                      strokeWidth={2} 
+                      strokeDasharray="4 4"
+                      dot={false}
+                      className="text-slate-400 dark:text-slate-600"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-slate-500">
+                Insufficient database entries complete for calculation. Extend the search parameters or chosen terminal years.
+              </div>
+            )}
+          </motion.div>
+
+          {/* Educational Insights Cards */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          >
+            <div className="p-6 md:p-8 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-950 dark:text-white flex items-center gap-2 mb-4">
+                <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600">
+                  <ShieldCheck size={18} />
+                </span>
+                The 0% Floor Mechanics
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                Observe the line chart closely. During periods of massive market crashes—specifically the 2000-2002 "Dot Com Crash" and the 2008 "Subprime Crisis"—the S&P 500 line (dashed grey) plunges dramatically. During those same periods, the IUL Strategy CAGR line (green) flattens out, shielded by the floor.
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                By never taking a loss, your next year's market growth compounds directly on top of a fully intact cash principal. You never waste precious bull years just trying to "get back to even" on a depreciated balance.
+              </p>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-950 dark:text-white flex items-center gap-2 mb-4">
+                <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <TrendingUp size={18} />
+                </span>
+                Understanding the Cap Limit Tradeoff
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                To fund the contractual 0% floor guarantee, policy providers buy institutional hedge options using the index options buffer, which places a "Cap" limit (e.g. 12.25%) on credited interest during extremely strong market years.
+              </p>
+              <p className="text-sm text-slate-650 dark:text-slate-400 leading-relaxed">
+                While you miss out on wild single years of +30% underlying index gains, this comparative test model proves that over average {rollingYears}-year wealth horizons, shielding yourself from downside bear years (0% instead of -40%) yields a higher compounded terminal cash return inside a minimum-COI minimum-death-benefit policy.
+              </p>
             </div>
           </motion.div>
         </div>
