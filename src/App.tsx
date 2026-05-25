@@ -30,6 +30,7 @@ import {
   Calculator
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import RothConversionCalculator from './components/RothConversionCalculator';
 import { 
   LineChart, 
   Line, 
@@ -2888,6 +2889,7 @@ export default function App() {
   };
 
   const CalculatorPage = () => {
+    const [activeCalcTab, setActiveCalcTab] = useState<"iul" | "roth">("iul");
     const [payload, setPayload] = useState<any>(null);
     const [seriesMaps, setSeriesMaps] = useState<Map<string, Map<string, number>> | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -3105,7 +3107,7 @@ export default function App() {
       return `${parts[1]}/${parts[2]}/${parts[0]}`;
     };
 
-    if (isLoading) {
+    if (activeCalcTab === "iul" && isLoading) {
       return (
         <div className="py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen flex items-center justify-center">
           <div className="text-center p-8 glass-card rounded-3xl max-w-sm mx-auto">
@@ -3120,7 +3122,7 @@ export default function App() {
       );
     }
 
-    if (error) {
+    if (activeCalcTab === "iul" && error) {
       return (
         <div className="py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen flex items-center justify-center">
           <div className="text-center p-10 glass-card rounded-3xl max-w-md mx-auto">
@@ -3143,8 +3145,40 @@ export default function App() {
     return (
       <div className="py-16 md:py-24 bg-[#F8FAFC] dark:bg-slate-950 min-h-screen">
         <div className="max-w-7xl mx-auto px-6">
-          {/* Header */}
-          <div className="text-center mb-16">
+          {/* Global Segmented Tab Selector */}
+          <div className="flex justify-center mb-16">
+            <div className="inline-flex p-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-1 rounded-[2rem] shadow-inner max-w-xl w-full">
+              <button
+                type="button"
+                onClick={() => setActiveCalcTab("iul")}
+                className={`flex-1 py-3 text-sm font-semibold tracking-tight rounded-full transition-all cursor-pointer ${
+                  activeCalcTab === "iul"
+                    ? "bg-primary text-white shadow-md shadow-primary/20 scale-[1.01]"
+                    : "text-slate-650 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
+                }`}
+              >
+                IUL Performance Backtester
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCalcTab("roth")}
+                className={`flex-1 py-3 text-sm font-semibold tracking-tight rounded-full transition-all cursor-pointer ${
+                  activeCalcTab === "roth"
+                    ? "bg-primary text-white shadow-md shadow-primary/20 scale-[1.01]"
+                    : "text-slate-655 dark:text-slate-400 hover:text-slate-955 dark:hover:text-white"
+                }`}
+              >
+                Roth Conversion Sandbox
+              </button>
+            </div>
+          </div>
+
+          {activeCalcTab === "roth" ? (
+            <RothConversionCalculator />
+          ) : (
+            <>
+              {/* Header */}
+              <div className="text-center mb-16">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -3741,6 +3775,8 @@ export default function App() {
               </p>
             </div>
           </motion.div>
+          </>
+          )}
         </div>
       </div>
     );
