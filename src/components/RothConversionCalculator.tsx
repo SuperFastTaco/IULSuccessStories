@@ -800,75 +800,81 @@ export default function RothConversionCalculator() {
           width: "816px",
           backgroundColor: "#f8fafc",
           fontFamily: "Inter, sans-serif",
+          color: "#0f172a"
         }}
-        className="text-slate-900"
       >
         {/* PAGE 1: TAX COMPARISON COVER REPORT */}
         <div
           id="pdf-report-page-1"
-          style={{ width: "816px", height: "1056px" }}
-          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#7cb342] shadow-sm"
+          style={{ 
+            width: "816px", 
+            height: "1056px", 
+            backgroundColor: "#ffffff", 
+            borderTop: "8px solid #7cb342", 
+            boxSizing: "border-box" 
+          }}
+          className="p-[40px] flex flex-col justify-between relative shadow-sm"
         >
           {/* Top segment block */}
           <div className="space-y-6">
             {/* Header section identical to client screenshot */}
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <span className="text-[10px] font-black tracking-widest text-[#7cb342] uppercase block">
+                <span className="text-[10px] font-black tracking-widest uppercase block" style={{ color: '#7cb342' }}>
                   Roth Conversion Analysis
                 </span>
-                <h1 className="text-[28px] font-black tracking-tight text-slate-900 leading-none">
+                <h1 className="text-[28px] font-black tracking-tight leading-none" style={{ color: '#0f172a' }}>
                   Tax Comparison Report
                 </h1>
-                <p className="text-[11px] font-medium text-slate-400">
+                <p className="text-[11px] font-medium" style={{ color: '#94a3b8' }}>
                   Tax comparison through age {inputs.deathAge}
                 </p>
               </div>
               <div className="text-right space-y-2">
                 <div>
-                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="text-[8px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>
                     Prepared For
                   </div>
-                  <div className="text-[12px] font-extrabold text-slate-800 leading-none">
+                  <div className="text-[12px] font-extrabold leading-none" style={{ color: '#1e293b' }}>
                     {inputs.clientName || "Valued Client"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                  <div className="text-[8px] font-black uppercase tracking-widest leading-none" style={{ color: '#94a3b8' }}>
                     Advisor
                   </div>
-                  <div className="text-[12px] font-extrabold text-slate-800 leading-none">
+                  <div className="text-[12px] font-extrabold leading-none" style={{ color: '#1e293b' }}>
                     {inputs.advisorName || "Financial Advisor"}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="border-b border-slate-100 my-1" />
+            <div className="border-b my-1" style={{ borderColor: '#f1f5f9' }} />
 
             {/* Metrics cards row */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+              <div className="border rounded-xl p-3" style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: 'rgba(248, 250, 252, 0.5)' }}>
+                <span className="text-[8px] font-bold uppercase tracking-widest block mb-0.5" style={{ color: '#94a3b8' }}>
                   Initial IRA Starting Value
                 </span>
-                <span className="text-base font-extrabold text-slate-800 font-mono">
+                <span className="text-base font-extrabold font-mono" style={{ color: '#1e293b' }}>
                   {money(inputs.initialIraBalance)}
                 </span>
               </div>
-              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+              <div className="border rounded-xl p-3" style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: 'rgba(248, 250, 252, 0.5)' }}>
+                <span className="text-[8px] font-bold uppercase tracking-widest block mb-0.5" style={{ color: '#94a3b8' }}>
                   Current Age
                 </span>
-                <span className="text-base font-extrabold text-slate-800 font-mono">
+                <span className="text-base font-extrabold font-mono" style={{ color: '#1e293b' }}>
                   {inputs.currentAge}
                 </span>
               </div>
-              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+              <div className="border rounded-xl p-3" style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: 'rgba(248, 250, 252, 0.5)' }}>
+                <span className="text-[8px] font-bold uppercase tracking-widest block mb-0.5" style={{ color: '#94a3b8' }}>
                   Projection Through
                 </span>
-                <span className="text-base font-extrabold text-slate-800 font-mono">
+                <span className="text-base font-extrabold font-mono" style={{ color: '#1e293b' }}>
                   Age {inputs.deathAge}
                 </span>
               </div>
@@ -877,16 +883,19 @@ export default function RothConversionCalculator() {
             {/* Advantage Strategy block with vertical left green line */}
             <div className="grid grid-cols-12 gap-4 items-stretch">
               {/* Box 1 (PROJECTED TAX ADVANTAGE) */}
-              <div className="col-span-8 bg-slate-800 text-white rounded-2xl p-5 flex flex-col justify-between min-h-[148px] relative overflow-hidden border-l-[10px] border-[#7cb342]">
+              <div 
+                className="col-span-8 text-white rounded-2xl p-5 flex flex-col justify-between min-h-[148px] relative overflow-hidden"
+                style={{ backgroundColor: '#1e293b', borderLeft: '10px solid #7cb342' }}
+              >
                 <div>
-                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-300 block mb-1">
+                  <span className="text-[9px] font-black uppercase tracking-wider block mb-1" style={{ color: '#cbd5e1' }}>
                     PROJECTED TAX ADVANTAGE @ AGE {inputs.deathAge}
                   </span>
-                  <div className="text-4xl font-black font-mono tracking-tight text-white leading-none">
+                  <div className="text-4xl font-black font-mono tracking-tight leading-none" style={{ color: '#ffffff' }}>
                     {money(Math.abs(result.taxDifference))}
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-300 font-medium leading-relaxed leading-none mt-2">
+                <p className="text-[10px] font-medium leading-relaxed leading-none mt-2" style={{ color: '#cbd5e1' }}>
                   {result.taxDifference >= 0
                     ? `Projected tax savings versus the traditional IRA path through age ${inputs.deathAge}.`
                     : "Traditional IRA presents smaller cumulative tax liability over the model timeframe."}
@@ -895,19 +904,25 @@ export default function RothConversionCalculator() {
 
               {/* Box 2 & 3 custom details Column layout */}
               <div className="col-span-4 flex flex-col gap-3">
-                <div className="border border-slate-200/60 rounded-2xl p-3 bg-white flex flex-col justify-center flex-1">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div 
+                  className="border rounded-2xl p-3 flex flex-col justify-center flex-1"
+                  style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: '#ffffff' }}
+                >
+                  <span className="text-[8px] font-bold uppercase tracking-wider block mb-0.5" style={{ color: '#94a3b8' }}>
                     TOTAL IRA TAXES @ AGE {inputs.deathAge}
                   </span>
-                  <span className="text-base font-black text-slate-800 font-mono">
+                  <span className="text-base font-black font-mono" style={{ color: '#1e293b' }}>
                     {money(result.noConversionTaxes)}
                   </span>
                 </div>
-                <div className="border border-slate-200/60 rounded-2xl p-3 bg-white flex flex-col justify-center flex-1">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div 
+                  className="border rounded-2xl p-3 flex flex-col justify-center flex-1"
+                  style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: '#ffffff' }}
+                >
+                  <span className="text-[8px] font-bold uppercase tracking-wider block mb-0.5" style={{ color: '#94a3b8' }}>
                     TOTAL ROTH TAXES @ AGE {inputs.deathAge}
                   </span>
-                  <span className="text-[#7cb342] text-base font-black font-mono">
+                  <span className="text-base font-black font-mono" style={{ color: '#7cb342' }}>
                     {money(result.rothConversionTaxes)}
                   </span>
                 </div>
@@ -917,92 +932,95 @@ export default function RothConversionCalculator() {
             {/* Lower detailed section */}
             <div className="grid grid-cols-12 gap-5 items-stretch pt-2">
               {/* Left Details column */}
-              <div className="col-span-5 border border-slate-200/60 rounded-2xl p-4 bg-white space-y-3.5">
-                <span className="text-[12px] font-black text-slate-800 tracking-tight block">
+              <div 
+                className="col-span-5 border rounded-2xl p-4 space-y-3.5"
+                style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: '#ffffff' }}
+              >
+                <span className="text-[12px] font-black tracking-tight block" style={{ color: '#1e293b' }}>
                   Scenario Inputs
                 </span>
-                <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-[9px] text-slate-600 font-medium leading-tight">
+                <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-[9px] font-medium leading-tight" style={{ color: '#475569' }}>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       RETIREMENT AGE
                     </span>
-                    <span className="text-slate-800 font-bold">{inputs.retirementAge}</span>
+                    <span className="font-bold" style={{ color: '#1e293b' }}>{inputs.retirementAge}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       NO-CONVERSION MODE
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {inputs.noConversionMode === "income" ? "Income Solve" : "RMD Only"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       CONVERSION YEARS
                     </span>
-                    <span className="text-slate-800 font-bold">{inputs.conversionYears}</span>
+                    <span className="font-bold" style={{ color: '#1e293b' }}>{inputs.conversionYears}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       BONUS
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {inputs.bonusRate * 100}%
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       CONVERSION TAX RATE
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.conversionTaxRate)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       TAX RATE AT RETIREMENT
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.taxRateAtRetirement)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       ROTH RETURN
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.rothReturn)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       IRA RETURN
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.noConversionReturn)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       ROTH ANNUAL FEE
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.rothAnnualFee)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       IRA ANNUAL FEE
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.noConversionAnnualFee)}
                     </span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                    <span className="text-[8px] font-black uppercase tracking-wide block" style={{ color: '#94a3b8' }}>
                       INCOME INFLATION
                     </span>
-                    <span className="text-slate-800 font-bold">
+                    <span className="font-bold" style={{ color: '#1e293b' }}>
                       {percent(inputs.inflationRate)}
                     </span>
                   </div>
@@ -1010,18 +1028,21 @@ export default function RothConversionCalculator() {
               </div>
 
               {/* Right Graph column */}
-              <div className="col-span-7 border border-slate-200/60 rounded-2xl p-4 bg-white flex flex-col justify-between">
+              <div 
+                className="col-span-7 border rounded-2xl p-4 flex flex-col justify-between"
+                style={{ borderColor: 'rgba(226, 232, 240, 0.6)', backgroundColor: '#ffffff' }}
+              >
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[12px] font-black text-slate-800 tracking-tight block">
+                  <span className="text-[12px] font-black tracking-tight block" style={{ color: '#1e293b' }}>
                     Projected Taxes Paid
                   </span>
-                  <span className="text-[9px] text-slate-450 uppercase tracking-wide font-medium">
+                  <span className="text-[9px] uppercase tracking-wide font-medium" style={{ color: '#64748b' }}>
                     Through age {inputs.deathAge}
                   </span>
                 </div>
 
                 {/* Inline SVG Chart Canvas */}
-                <div className="h-[148px] w-full bg-slate-50/20 rounded-xl overflow-hidden py-1">
+                <div className="h-[148px] w-full rounded-xl overflow-hidden py-1" style={{ backgroundColor: 'rgba(248, 250, 252, 0.2)' }}>
                   <PdfLineChart
                     data={pdfChartData}
                     maxTax={pdfMaxTax}
@@ -1031,12 +1052,12 @@ export default function RothConversionCalculator() {
                 </div>
 
                 {/* Sub legends label */}
-                <div className="flex items-center justify-center gap-6 text-[8px] font-bold tracking-wider uppercase text-slate-500 mt-1">
+                <div className="flex items-center justify-center gap-6 text-[8px] font-bold tracking-wider uppercase mt-1" style={{ color: '#64748b' }}>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-650" style={{ backgroundColor: "#475569" }} /> No-conversion taxes
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#475569" }} /> No-conversion taxes
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#7cb342]" style={{ backgroundColor: "#7cb342" }} /> Roth conversion taxes
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#7cb342" }} /> Roth conversion taxes
                   </span>
                 </div>
               </div>
@@ -1044,11 +1065,11 @@ export default function RothConversionCalculator() {
           </div>
 
           {/* Footer Page 1 of 3 */}
-          <div className="space-y-3.5 border-t border-slate-100 pt-3">
-            <p className="text-[7.5px] leading-relaxed text-slate-400 leading-normal font-medium">
+          <div className="space-y-3.5 border-t pt-3" style={{ borderColor: '#f1f5f9' }}>
+            <p className="text-[7.5px] leading-relaxed leading-normal font-medium" style={{ color: '#94a3b8' }}>
               Hypothetical projection based on stated assumptions. This is not tax, legal, or investment advice. Consult qualified professionals before making Roth conversion decisions.
             </p>
-            <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+            <div className="flex justify-between items-center text-[9px] font-semibold uppercase tracking-wider" style={{ color: '#94a3b8' }}>
               <span>Roth Conversion Tax Comparison</span>
               <span className="font-mono">1/3</span>
             </div>
@@ -1058,36 +1079,42 @@ export default function RothConversionCalculator() {
         {/* PAGE 2: ROTH STRATEGY LEDGER DATA JOURNAL */}
         <div
           id="pdf-report-page-2"
-          style={{ width: "816px", height: "1056px" }}
-          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#7cb342] shadow-sm"
+          style={{ 
+            width: "816px", 
+            height: "1056px", 
+            backgroundColor: "#ffffff", 
+            borderTop: "8px solid #7cb342", 
+            boxSizing: "border-box" 
+          }}
+          className="p-[40px] flex flex-col justify-between relative shadow-sm"
         >
           <div className="space-y-4">
             <div className="flex justify-between items-baseline">
               <div className="space-y-0.5">
-                <h2 className="text-[20px] font-black text-slate-900 tracking-tight leading-none">
+                <h2 className="text-[20px] font-black tracking-tight leading-none" style={{ color: '#0f172a' }}>
                   Roth Conversion Ledger
                 </h2>
-                <p className="text-[9.5px] text-slate-400 font-medium">
+                <p className="text-[9.5px] font-medium" style={{ color: '#94a3b8' }}>
                   {firstRothStartingMatchAge ? (
                     <>
                       Highlighted row first reaches the original IRA starting value of{" "}
-                      <span className="font-bold text-slate-700">{money(inputs.initialIraBalance)}</span>.
+                      <span className="font-bold" style={{ color: '#334155' }}>{money(inputs.initialIraBalance)}</span>.
                     </>
                   ) : (
                     "Granular comparative ledger modeling required conversions and total taxes paid."
                   )}
                 </p>
               </div>
-              <span className="text-[9px] font-mono text-slate-400 font-bold uppercase">
+              <span className="text-[9px] font-mono font-bold uppercase" style={{ color: '#94a3b8' }}>
                 Rows 1-{result.rothLedger.length} of {result.rothLedger.length}
               </span>
             </div>
 
             {/* Standard Data Table */}
-            <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto rounded-xl overflow-hidden border" style={{ borderColor: '#f1f5f9' }}>
               <table className="w-full text-left border-collapse leading-tight">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
+                  <tr className="font-bold" style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #f1f5f9', color: '#64748b' }}>
                     <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-left`}>Age</th>
                     <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>IRA Start</th>
                     <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Conversion</th>
@@ -1098,7 +1125,7 @@ export default function RothConversionCalculator() {
                     <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Tax Advantage</th>
                   </tr>
                 </thead>
-                <tbody className={`${textDensityClass} text-slate-700 font-mono divide-y divide-slate-100/60`}>
+                <tbody className={`${textDensityClass} font-mono`} style={{ color: '#334155' }}>
                   {result.rothLedger.map((row) => {
                     const tradRow = result.noConversionLedger.find((tr) => tr.age === row.age) || {
                       cumulativeTax: 0,
@@ -1109,18 +1136,23 @@ export default function RothConversionCalculator() {
                     return (
                       <tr
                         key={`pdf-roth-${row.age}`}
-                        className={`${rowPaddingClass} ${
-                          isMatch ? "bg-[#7cb342]/10 font-bold border-y border-[#7cb342]/30 text-slate-900" : "hover:bg-slate-50/50"
-                        }`}
+                        className={rowPaddingClass}
+                        style={{
+                          borderBottom: '1px solid rgba(241, 245, 249, 0.6)',
+                          backgroundColor: isMatch ? 'rgba(124, 179, 66, 0.1)' : 'transparent',
+                          fontWeight: isMatch ? 'bold' : 'normal',
+                          color: isMatch ? '#0f172a' : '#334155',
+                          ...(isMatch ? { borderTop: '1px solid rgba(124, 179, 66, 0.3)', borderBottom: '1px solid rgba(124, 179, 66, 0.3)' } : {})
+                        }}
                       >
-                        <td className="px-2 font-sans font-bold text-slate-900 text-left">{row.age}</td>
+                        <td className="px-2 font-sans font-bold text-left" style={{ color: isMatch ? '#000000' : '#0f172a' }}>{row.age}</td>
                         <td className="px-2 text-right">{money(row.iraStart)}</td>
-                        <td className={`px-2 text-right font-bold ${row.distribution > 0 ? "text-emerald-700" : ""}`}>{money(row.distribution)}</td>
+                        <td className="px-2 text-right font-bold" style={{ color: row.distribution > 0 ? '#047857' : 'inherit' }}>{money(row.distribution)}</td>
                         <td className="px-2 text-right">{money(row.taxPaid)}</td>
                         <td className="px-2 text-right">{money(row.iraEnd)}</td>
-                        <td className="px-2 text-right text-indigo-700 font-bold">{money(row.rothValue)}</td>
+                        <td className="px-2 text-right font-bold" style={{ color: '#4338ca' }}>{money(row.rothValue)}</td>
                         <td className="px-2 text-right font-semibold">{money(row.cumulativeTax)}</td>
-                        <td className={`px-2 text-right font-bold ${advantageVal > 0 ? "text-emerald-600" : advantageVal < 0 ? "text-rose-600" : ""}`}>
+                        <td className="px-2 text-right font-bold" style={{ color: advantageVal > 0 ? '#059669' : advantageVal < 0 ? '#e11d48' : 'inherit' }}>
                           {formatAdvantage(advantageVal)}
                         </td>
                       </tr>
@@ -1132,7 +1164,7 @@ export default function RothConversionCalculator() {
           </div>
 
           {/* Footer Page 2 of 3 */}
-          <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider pt-3 border-t border-slate-100">
+          <div className="flex justify-between items-center text-[9px] font-semibold uppercase tracking-wider pt-3 border-t" style={{ borderColor: '#f1f5f9', color: '#94a3b8' }}>
             <span>Roth Conversion Tax Comparison</span>
             <span className="font-mono">2/3</span>
           </div>
@@ -1141,29 +1173,35 @@ export default function RothConversionCalculator() {
         {/* PAGE 3: TRADITIONAL ACCOUNT BALANCE JOURNALS */}
         <div
           id="pdf-report-page-3"
-          style={{ width: "816px", height: "1056px" }}
-          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#475569] shadow-sm"
+          style={{ 
+            width: "816px", 
+            height: "1056px", 
+            backgroundColor: "#ffffff", 
+            borderTop: "8px solid #475569", 
+            boxSizing: "border-box" 
+          }}
+          className="p-[40px] flex flex-col justify-between relative shadow-sm"
         >
           <div className="space-y-4">
             <div className="flex justify-between items-baseline">
               <div className="space-y-0.5">
-                <h2 className="text-[20px] font-black text-slate-900 tracking-tight leading-none">
+                <h2 className="text-[20px] font-black tracking-tight leading-none" style={{ color: '#0f172a' }}>
                   IRA Account Balance
                 </h2>
-                <p className="text-[9.5px] text-slate-400 font-medium font-sans">
+                <p className="text-[9.5px] font-medium font-sans" style={{ color: '#94a3b8' }}>
                   Projected IRA account balance and after-tax value by age.
                 </p>
               </div>
-              <span className="text-[9px] font-mono text-slate-400 font-bold uppercase">
+              <span className="text-[9px] font-mono font-bold uppercase" style={{ color: '#94a3b8' }}>
                 Rows 1-{result.noConversionLedger.length} of {result.noConversionLedger.length}
               </span>
             </div>
 
             {/* Standard Data Table */}
-            <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto rounded-xl overflow-hidden border" style={{ borderColor: '#f1f5f9' }}>
               <table className="w-full text-left border-collapse leading-tight">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
+                  <tr className="font-bold" style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #f1f5f9', color: '#64748b' }}>
                     <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-left`}>Age</th>
                     <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Traditional Start Balance</th>
                     <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Distribution</th>
@@ -1173,18 +1211,22 @@ export default function RothConversionCalculator() {
                     <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Expected After-Tax Net Wealth</th>
                   </tr>
                 </thead>
-                <tbody className={`${textDensityClass} text-slate-700 font-mono divide-y divide-slate-100/60`}>
+                <tbody className={`${textDensityClass} font-mono`} style={{ color: '#334155' }}>
                   {result.noConversionLedger.map((row) => {
                     const afterTaxTraditionalEnd = row.iraEnd * (1 - iraTaxRate(inputs, row.age));
                     return (
-                      <tr key={`pdf-trad-${row.age}`} className={`${rowPaddingClass} hover:bg-slate-50/50`}>
-                        <td className="px-3 font-sans font-bold text-slate-900 text-left">{row.age}</td>
+                      <tr 
+                        key={`pdf-trad-${row.age}`} 
+                        className={rowPaddingClass}
+                        style={{ borderBottom: '1px solid rgba(241, 245, 249, 0.6)', color: '#334155' }}
+                      >
+                        <td className="px-3 font-sans font-bold text-left" style={{ color: '#0f172a' }}>{row.age}</td>
                         <td className="px-3 text-right">{money(row.iraStart)}</td>
-                        <td className="px-3 text-right font-semibold text-orange-700">{money(row.distribution)}</td>
+                        <td className="px-3 text-right font-semibold" style={{ color: '#c2410c' }}>{money(row.distribution)}</td>
                         <td className="px-3 text-right">{money(row.taxPaid)}</td>
                         <td className="px-3 text-right">{money(row.iraEnd)}</td>
                         <td className="px-3 text-right font-semibold">{money(row.cumulativeTax)}</td>
-                        <td className="px-3 text-right text-emerald-700 font-bold">{money(afterTaxTraditionalEnd)}</td>
+                        <td className="px-3 text-right font-bold" style={{ color: '#047857' }}>{money(afterTaxTraditionalEnd)}</td>
                       </tr>
                     );
                   })}
@@ -1194,7 +1236,7 @@ export default function RothConversionCalculator() {
           </div>
 
           {/* Footer Page 3 of 3 */}
-          <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider pt-3 border-t border-[#cbd5e1]/50">
+          <div className="flex justify-between items-center text-[9px] font-semibold uppercase tracking-wider pt-3 border-t" style={{ borderColor: 'rgba(203, 213, 225, 0.5)', color: '#94a3b8' }}>
             <span>Roth Conversion Tax Comparison</span>
             <span className="font-mono">3/3</span>
           </div>
