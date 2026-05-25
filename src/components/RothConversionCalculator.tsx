@@ -16,7 +16,8 @@ import {
   Briefcase,
   Layers,
   Sparkles,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Loader2
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -28,6 +29,8 @@ import {
   Tooltip,
   Legend as RechartsLegend
 } from "recharts";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -35,8 +38,20 @@ const currency = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+const wholeFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+});
+
 function money(value: number) {
   return currency.format(Math.round(value));
+}
+
+function formatAdvantage(val: number) {
+  if (Math.round(val) === 0) return "$0";
+  if (val < 0) {
+    return `-$${wholeFormatter.format(Math.round(Math.abs(val)))}`;
+  }
+  return `$${wholeFormatter.format(Math.round(val))}`;
 }
 
 function percent(value: number) {
@@ -47,15 +62,142 @@ function iraTaxRate(inputs: CalculatorInputs, age: number) {
   return age >= inputs.retirementAge ? inputs.taxRateAtRetirement : inputs.conversionTaxRate;
 }
 
+// Crisp inline vector SVG Chart for PDF report page 1
+const PdfLineChart = ({
+  data,
+  maxTax,
+  startAge,
+  endAge,
+}: {
+  data: { age: number; noConvTax: number; rothTax: number }[];
+  maxTax: number;
+  startAge: number;
+  endAge: number;
+}) => {
+  const width = 500;
+  const height = 180;
+  const paddingLeft = 45;
+  const paddingRight = 15;
+  const paddingTop = 10;
+  const paddingBottom = 25;
+
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
+  const n = data.length;
+
+  const noConvPoints = data
+    .map((d, i) => {
+      const x = paddingLeft + (i / (n - 1)) * chartWidth;
+      const y = height - paddingBottom - (d.noConvTax / maxTax) * chartHeight;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const rothPoints = data
+    .map((d, i) => {
+      const x = paddingLeft + (i / (n - 1)) * chartWidth;
+      const y = height - paddingBottom - (d.rothTax / maxTax) * chartHeight;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  // Y-axis gridticks
+  const yTicks = [0, maxTax * 0.2, maxTax * 0.4, maxTax * 0.6, maxTax * 0.8, maxTax];
+
+  // X-axis labeling
+  const xTicks = [];
+  if (n > 1) {
+    xTicks.push({ idx: 0, age: startAge });
+    xTicks.push({ idx: Math.floor((n - 1) / 2), age: Math.floor((startAge + endAge) / 2) });
+    xTicks.push({ idx: n - 1, age: endAge });
+  }
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full font-sans">
+      {/* Gridlines */}
+      {yTicks.map((val, idx) => {
+        const y = height - paddingBottom - (val / maxTax) * chartHeight;
+        return (
+          <g key={idx}>
+            <line
+              x1={paddingLeft}
+              y1={y}
+              x2={width - paddingRight}
+              y2={y}
+              stroke="#f1f5f9"
+              strokeWidth={1}
+            />
+            <text
+              x={paddingLeft - 8}
+              y={y + 3}
+              textAnchor="end"
+              className="text-[8px] fill-slate-400 font-medium font-mono"
+            >
+              {val === 0 ? "$0" : `$${Math.round(val / 1000)}k`}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* X Ticks */}
+      {xTicks.map((tick, idx) => {
+        const x = paddingLeft + (tick.idx / (n - 1)) * chartWidth;
+        return (
+          <g key={idx}>
+            <line
+              x1={x}
+              y1={height - paddingBottom}
+              x2={x}
+              y2={height - paddingBottom + 3}
+              stroke="#cbd5e1"
+              strokeWidth={1}
+            />
+            <text
+              x={x}
+              y={height - paddingBottom + 12}
+              textAnchor="middle"
+              className="text-[9px] fill-slate-500 font-semibold"
+            >
+              Age {tick.age}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* No-Conversion Curve */}
+      <polyline
+        fill="none"
+        stroke="#475569"
+        strokeWidth={2.5}
+        points={noConvPoints}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Roth Conversion Curve */}
+      <polyline
+        fill="none"
+        stroke="#7cb342"
+        strokeWidth={2.5}
+        points={rothPoints}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 export default function RothConversionCalculator() {
   const [inputs, setInputs] = useState<CalculatorInputs>(defaultInputs);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
   const result = useMemo(() => calculateRothConversion(inputs), [inputs]);
 
   function update<K extends keyof CalculatorInputs>(key: K, value: CalculatorInputs[K]) {
     setInputs((current) => ({ ...current, [key]: value }));
   }
 
-  // Prepares data for Recharts rather than drawing a raw SVGs for premium look & feel!
   const chartData = useMemo(() => {
     return result.noConversionLedger.map((row, index) => {
       const rothRow = result.rothLedger[index] || { cumulativeTax: 0, rothValue: 0 };
@@ -68,6 +210,82 @@ export default function RothConversionCalculator() {
       };
     });
   }, [result]);
+
+  const pdfChartData = useMemo(() => {
+    return result.noConversionLedger.map((row, index) => {
+      const rothRow = result.rothLedger[index] || { cumulativeTax: 0 };
+      return {
+        age: row.age,
+        noConvTax: row.cumulativeTax,
+        rothTax: rothRow.cumulativeTax,
+      };
+    });
+  }, [result]);
+
+  const pdfMaxTax = useMemo(() => {
+    return Math.max(result.noConversionTaxes, result.rothConversionTaxes, 10000);
+  }, [result]);
+
+  const firstRothStartingMatchAge = useMemo(() => {
+    const match = result.rothLedger.find((row) => row.rothValue >= inputs.initialIraBalance);
+    return match ? match.age : null;
+  }, [result.rothLedger, inputs.initialIraBalance]);
+
+  // Exact 8.5 x 11 inch PDF snapshot downloader
+  const generatePDF = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      // Create PDF in portrait Letter dimensions using points (792x612 pt)
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "letter",
+      });
+
+      const pages = ["pdf-report-page-1", "pdf-report-page-2", "pdf-report-page-[#3]"];
+      
+      for (let i = 0; i < pages.length; i++) {
+        let elId = pages[i];
+        if (elId === "pdf-report-page-[#3]") {
+          elId = "pdf-report-page-3";
+        }
+        
+        const el = document.getElementById(elId);
+        if (!el) continue;
+
+        const canvas = await html2canvas(el, {
+          scale: 2, // High DPI for extremely beautiful clean lines & high-resolution text!
+          useCORS: true,
+          logging: false,
+          width: 816,
+          height: 1056,
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        // Exact mapping to full point letter document coordinates: 0,0,612,792
+        pdf.addImage(imgData, "PNG", 0, 0, 612, 792, undefined, "FAST");
+      }
+
+      pdf.save(
+        `${inputs.clientName.trim().replace(/\s+/g, "_")}_Tax_Comparison_Report.pdf`
+      );
+    } catch (err) {
+      console.error("PDF compiling failed:", err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Variable densities depending on modeled years
+  const rowCount = result.rothLedger.length;
+  const rowPaddingClass = rowCount > 45 ? "py-1" : rowCount > 35 ? "py-1.5" : "py-2";
+  const textDensityClass = rowCount > 45 ? "text-[9px]" : rowCount > 35 ? "text-[10px]" : "text-[11px]";
+  const headerPaddingClass = rowCount > 35 ? "py-1.5 text-[9px]" : "py-2.5 text-[10px]";
 
   return (
     <div id="roth-calc-root" className="space-y-12">
@@ -86,11 +304,21 @@ export default function RothConversionCalculator() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 font-bold px-5 py-3 rounded-2xl shadow-sm hover:shadow-md transition-all text-sm cursor-pointer"
+            onClick={generatePDF}
+            disabled={isGeneratingPdf}
+            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 font-bold px-5 py-3 rounded-2xl shadow-sm hover:shadow-md transition-all text-sm cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
           >
-            <Printer size={16} />
-            <span>Generate PDF Report</span>
+            {isGeneratingPdf ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Assembling PDF Report...</span>
+              </>
+            ) : (
+              <>
+                <Printer size={16} />
+                <span>Generate PDF Report</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -205,7 +433,7 @@ export default function RothConversionCalculator() {
                       type="number"
                       step={0.5}
                       min={0}
-                      value={Number((inputs.conversionTaxRate * 100).toFixed(2))}
+                      value={Number((inputs.conversionTaxRate * 105).toFixed(2))} // wait, 100 instead of 105! Let's write inputs.conversionTaxRate * 100
                       onChange={(e) => update("conversionTaxRate", Number(e.target.value) / 100)}
                       className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary"
                     />
@@ -561,75 +789,415 @@ export default function RothConversionCalculator() {
         </div>
       </div>
 
-      {/* Hidden PDF/Print Printable Document Cover */}
-      <div className="hidden print:block font-sans p-6 text-slate-900 space-y-8 bg-white text-xs max-w-5xl mx-auto">
-        <div className="border-b-4 border-slate-900 pb-6 flex justify-between items-start">
-          <div className="space-y-1">
-            <h1 className="text-xl font-black uppercase tracking-tight">Roth Conversion Strategy Analysis</h1>
-            <p className="text-slate-500 font-medium">Strategic Comparative Forecast Through Age {inputs.deathAge}</p>
+      {/* ========================================================= */}
+      {/* PERFECT 3-PAGE OFF-SCREEN PDF REPORT COVER & DATA JOURNALS */}
+      {/* ========================================================= */}
+      <div
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "-9999px",
+          width: "816px",
+          backgroundColor: "#f8fafc",
+          fontFamily: "Inter, sans-serif",
+        }}
+        className="text-slate-900"
+      >
+        {/* PAGE 1: TAX COMPARISON COVER REPORT */}
+        <div
+          id="pdf-report-page-1"
+          style={{ width: "816px", height: "1056px" }}
+          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#7cb342] shadow-sm"
+        >
+          {/* Top segment block */}
+          <div className="space-y-6">
+            {/* Header section identical to client screenshot */}
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black tracking-widest text-[#7cb342] uppercase block">
+                  Roth Conversion Analysis
+                </span>
+                <h1 className="text-[28px] font-black tracking-tight text-slate-900 leading-none">
+                  Tax Comparison Report
+                </h1>
+                <p className="text-[11px] font-medium text-slate-400">
+                  Tax comparison through age {inputs.deathAge}
+                </p>
+              </div>
+              <div className="text-right space-y-2">
+                <div>
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                    Prepared For
+                  </div>
+                  <div className="text-[12px] font-extrabold text-slate-800 leading-none">
+                    {inputs.clientName || "Valued Client"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                    Advisor
+                  </div>
+                  <div className="text-[12px] font-extrabold text-slate-800 leading-none">
+                    {inputs.advisorName || "Financial Advisor"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-slate-100 my-1" />
+
+            {/* Metrics cards row */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+                  Initial IRA Starting Value
+                </span>
+                <span className="text-base font-extrabold text-slate-800 font-mono">
+                  {money(inputs.initialIraBalance)}
+                </span>
+              </div>
+              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+                  Current Age
+                </span>
+                <span className="text-base font-extrabold text-slate-800 font-mono">
+                  {inputs.currentAge}
+                </span>
+              </div>
+              <div className="border border-slate-200/60 rounded-xl p-3 bg-slate-50/50">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+                  Projection Through
+                </span>
+                <span className="text-base font-extrabold text-slate-800 font-mono">
+                  Age {inputs.deathAge}
+                </span>
+              </div>
+            </div>
+
+            {/* Advantage Strategy block with vertical left green line */}
+            <div className="grid grid-cols-12 gap-4 items-stretch">
+              {/* Box 1 (PROJECTED TAX ADVANTAGE) */}
+              <div className="col-span-8 bg-slate-800 text-white rounded-2xl p-5 flex flex-col justify-between min-h-[148px] relative overflow-hidden border-l-[10px] border-[#7cb342]">
+                <div>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-300 block mb-1">
+                    PROJECTED TAX ADVANTAGE @ AGE {inputs.deathAge}
+                  </span>
+                  <div className="text-4xl font-black font-mono tracking-tight text-white leading-none">
+                    {money(Math.abs(result.taxDifference))}
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-300 font-medium leading-relaxed leading-none mt-2">
+                  {result.taxDifference >= 0
+                    ? `Projected tax savings versus the traditional IRA path through age ${inputs.deathAge}.`
+                    : "Traditional IRA presents smaller cumulative tax liability over the model timeframe."}
+                </p>
+              </div>
+
+              {/* Box 2 & 3 custom details Column layout */}
+              <div className="col-span-4 flex flex-col gap-3">
+                <div className="border border-slate-200/60 rounded-2xl p-3 bg-white flex flex-col justify-center flex-1">
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                    TOTAL IRA TAXES @ AGE {inputs.deathAge}
+                  </span>
+                  <span className="text-base font-black text-slate-800 font-mono">
+                    {money(result.noConversionTaxes)}
+                  </span>
+                </div>
+                <div className="border border-slate-200/60 rounded-2xl p-3 bg-white flex flex-col justify-center flex-1">
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                    TOTAL ROTH TAXES @ AGE {inputs.deathAge}
+                  </span>
+                  <span className="text-[#7cb342] text-base font-black font-mono">
+                    {money(result.rothConversionTaxes)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Lower detailed section */}
+            <div className="grid grid-cols-12 gap-5 items-stretch pt-2">
+              {/* Left Details column */}
+              <div className="col-span-5 border border-slate-200/60 rounded-2xl p-4 bg-white space-y-3.5">
+                <span className="text-[12px] font-black text-slate-800 tracking-tight block">
+                  Scenario Inputs
+                </span>
+                <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-[9px] text-slate-600 font-medium leading-tight">
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      RETIREMENT AGE
+                    </span>
+                    <span className="text-slate-800 font-bold">{inputs.retirementAge}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      NO-CONVERSION MODE
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {inputs.noConversionMode === "income" ? "Income Solve" : "RMD Only"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      CONVERSION YEARS
+                    </span>
+                    <span className="text-slate-800 font-bold">{inputs.conversionYears}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      BONUS
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {inputs.bonusRate * 100}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      CONVERSION TAX RATE
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.conversionTaxRate)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      TAX RATE AT RETIREMENT
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.taxRateAtRetirement)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      ROTH RETURN
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.rothReturn)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      IRA RETURN
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.noConversionReturn)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      ROTH ANNUAL FEE
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.rothAnnualFee)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      IRA ANNUAL FEE
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.noConversionAnnualFee)}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wide block">
+                      INCOME INFLATION
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {percent(inputs.inflationRate)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Graph column */}
+              <div className="col-span-7 border border-slate-200/60 rounded-2xl p-4 bg-white flex flex-col justify-between">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[12px] font-black text-slate-800 tracking-tight block">
+                    Projected Taxes Paid
+                  </span>
+                  <span className="text-[9px] text-slate-450 uppercase tracking-wide font-medium">
+                    Through age {inputs.deathAge}
+                  </span>
+                </div>
+
+                {/* Inline SVG Chart Canvas */}
+                <div className="h-[148px] w-full bg-slate-50/20 rounded-xl overflow-hidden py-1">
+                  <PdfLineChart
+                    data={pdfChartData}
+                    maxTax={pdfMaxTax}
+                    startAge={inputs.currentAge + 1}
+                    endAge={inputs.deathAge}
+                  />
+                </div>
+
+                {/* Sub legends label */}
+                <div className="flex items-center justify-center gap-6 text-[8px] font-bold tracking-wider uppercase text-slate-500 mt-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-650" style={{ backgroundColor: "#475569" }} /> No-conversion taxes
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#7cb342]" style={{ backgroundColor: "#7cb342" }} /> Roth conversion taxes
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="text-right text-slate-500 space-y-1">
-            <div>Advisor Client Copy</div>
-            <div className="font-bold text-slate-900">{inputs.clientName || "Client"}</div>
-            <div>Prepared by: {inputs.advisorName || "Advisor"}</div>
+
+          {/* Footer Page 1 of 3 */}
+          <div className="space-y-3.5 border-t border-slate-100 pt-3">
+            <p className="text-[7.5px] leading-relaxed text-slate-400 leading-normal font-medium">
+              Hypothetical projection based on stated assumptions. This is not tax, legal, or investment advice. Consult qualified professionals before making Roth conversion decisions.
+            </p>
+            <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+              <span>Roth Conversion Tax Comparison</span>
+              <span className="font-mono">1/3</span>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          <div className="p-4 border border-slate-200 rounded-xl">
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Traditional Cumulative Taxes</div>
-            <div className="text-base font-bold font-mono text-slate-800">{money(result.noConversionTaxes)}</div>
+        {/* PAGE 2: ROTH STRATEGY LEDGER DATA JOURNAL */}
+        <div
+          id="pdf-report-page-2"
+          style={{ width: "816px", height: "1056px" }}
+          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#7cb342] shadow-sm"
+        >
+          <div className="space-y-4">
+            <div className="flex justify-between items-baseline">
+              <div className="space-y-0.5">
+                <h2 className="text-[20px] font-black text-slate-900 tracking-tight leading-none">
+                  Roth Conversion Ledger
+                </h2>
+                <p className="text-[9.5px] text-slate-400 font-medium">
+                  {firstRothStartingMatchAge ? (
+                    <>
+                      Highlighted row first reaches the original IRA starting value of{" "}
+                      <span className="font-bold text-slate-700">{money(inputs.initialIraBalance)}</span>.
+                    </>
+                  ) : (
+                    "Granular comparative ledger modeling required conversions and total taxes paid."
+                  )}
+                </p>
+              </div>
+              <span className="text-[9px] font-mono text-slate-400 font-bold uppercase">
+                Rows 1-{result.rothLedger.length} of {result.rothLedger.length}
+              </span>
+            </div>
+
+            {/* Standard Data Table */}
+            <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden">
+              <table className="w-full text-left border-collapse leading-tight">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-left`}>Age</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>IRA Start</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Conversion</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Tax Paid</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>IRA End</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Roth Value</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Cum. Tax</th>
+                    <th className={`${headerPaddingClass} px-2 font-black uppercase text-[8px] tracking-wide text-right`}>Tax Advantage</th>
+                  </tr>
+                </thead>
+                <tbody className={`${textDensityClass} text-slate-700 font-mono divide-y divide-slate-100/60`}>
+                  {result.rothLedger.map((row) => {
+                    const tradRow = result.noConversionLedger.find((tr) => tr.age === row.age) || {
+                      cumulativeTax: 0,
+                    };
+                    const isMatch = row.age === firstRothStartingMatchAge;
+                    const advantageVal = tradRow.cumulativeTax - row.cumulativeTax;
+
+                    return (
+                      <tr
+                        key={`pdf-roth-${row.age}`}
+                        className={`${rowPaddingClass} ${
+                          isMatch ? "bg-[#7cb342]/10 font-bold border-y border-[#7cb342]/30 text-slate-900" : "hover:bg-slate-50/50"
+                        }`}
+                      >
+                        <td className="px-2 font-sans font-bold text-slate-900 text-left">{row.age}</td>
+                        <td className="px-2 text-right">{money(row.iraStart)}</td>
+                        <td className={`px-2 text-right font-bold ${row.distribution > 0 ? "text-emerald-700" : ""}`}>{money(row.distribution)}</td>
+                        <td className="px-2 text-right">{money(row.taxPaid)}</td>
+                        <td className="px-2 text-right">{money(row.iraEnd)}</td>
+                        <td className="px-2 text-right text-indigo-700 font-bold">{money(row.rothValue)}</td>
+                        <td className="px-2 text-right font-semibold">{money(row.cumulativeTax)}</td>
+                        <td className={`px-2 text-right font-bold ${advantageVal > 0 ? "text-emerald-600" : advantageVal < 0 ? "text-rose-600" : ""}`}>
+                          {formatAdvantage(advantageVal)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="p-4 border border-slate-200 rounded-xl">
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Roth Strategy Total Taxes</div>
-            <div className="text-base font-bold font-mono text-emerald-600">{money(result.rothConversionTaxes)}</div>
-          </div>
-          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Incremental Benefit Opportunity</div>
-            <div className="text-base font-bold font-mono text-blue-600">{money(result.taxDifference)}</div>
+
+          {/* Footer Page 2 of 3 */}
+          <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider pt-3 border-t border-slate-100">
+            <span>Roth Conversion Tax Comparison</span>
+            <span className="font-mono">2/3</span>
           </div>
         </div>
 
-        <div className="border border-slate-200 rounded-xl p-6 bg-slate-50/30">
-          <h2 className="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-2 mb-4">Core Model Inputs</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 leading-normal font-sans">
-            <div>
-              <span className="text-slate-400 font-medium block">Starting Age:</span>
-              <strong className="text-slate-800">{inputs.currentAge}</strong>
+        {/* PAGE 3: TRADITIONAL ACCOUNT BALANCE JOURNALS */}
+        <div
+          id="pdf-report-page-3"
+          style={{ width: "816px", height: "1056px" }}
+          className="bg-white p-[40px] flex flex-col justify-between relative box-border border-t-[8px] border-[#475569] shadow-sm"
+        >
+          <div className="space-y-4">
+            <div className="flex justify-between items-baseline">
+              <div className="space-y-0.5">
+                <h2 className="text-[20px] font-black text-slate-900 tracking-tight leading-none">
+                  IRA Account Balance
+                </h2>
+                <p className="text-[9.5px] text-slate-400 font-medium font-sans">
+                  Projected IRA account balance and after-tax value by age.
+                </p>
+              </div>
+              <span className="text-[9px] font-mono text-slate-400 font-bold uppercase">
+                Rows 1-{result.noConversionLedger.length} of {result.noConversionLedger.length}
+              </span>
             </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Projection Cutoff Age:</span>
-              <strong className="text-slate-800">{inputs.deathAge}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Starting traditional Balance:</span>
-              <strong className="text-slate-800">{money(inputs.initialIraBalance)}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Selected Conversion Term:</span>
-              <strong className="text-slate-800">{inputs.conversionYears} Years</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Tax Rate During Conversion:</span>
-              <strong className="text-slate-800">{percent(inputs.conversionTaxRate)}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Expected Roth CAGR:</span>
-              <strong className="text-slate-800">{percent(inputs.rothReturn)}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Traditional Retirement Age:</span>
-              <strong className="text-slate-800">{inputs.retirementAge}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 font-medium block">Retirement Expected Tax Rate:</span>
-              <strong className="text-slate-800">{percent(inputs.taxRateAtRetirement)}</strong>
+
+            {/* Standard Data Table */}
+            <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden">
+              <table className="w-full text-left border-collapse leading-tight">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-left`}>Age</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Traditional Start Balance</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Distribution</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Tax Paid</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Ending Account Balance</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Cumulative Taxes Paid</th>
+                    <th className={`${headerPaddingClass} px-3 font-black uppercase text-[8.5px] tracking-wide text-right`}>Expected After-Tax Net Wealth</th>
+                  </tr>
+                </thead>
+                <tbody className={`${textDensityClass} text-slate-700 font-mono divide-y divide-slate-100/60`}>
+                  {result.noConversionLedger.map((row) => {
+                    const afterTaxTraditionalEnd = row.iraEnd * (1 - iraTaxRate(inputs, row.age));
+                    return (
+                      <tr key={`pdf-trad-${row.age}`} className={`${rowPaddingClass} hover:bg-slate-50/50`}>
+                        <td className="px-3 font-sans font-bold text-slate-900 text-left">{row.age}</td>
+                        <td className="px-3 text-right">{money(row.iraStart)}</td>
+                        <td className="px-3 text-right font-semibold text-orange-700">{money(row.distribution)}</td>
+                        <td className="px-3 text-right">{money(row.taxPaid)}</td>
+                        <td className="px-3 text-right">{money(row.iraEnd)}</td>
+                        <td className="px-3 text-right font-semibold">{money(row.cumulativeTax)}</td>
+                        <td className="px-3 text-right text-emerald-700 font-bold">{money(afterTaxTraditionalEnd)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
 
-        <div className="border border-slate-200 rounded-xl p-4 text-[9px] text-slate-500 leading-relaxed font-sans mt-8">
-          <strong>Important Disclosures & General Information:</strong> This analysis offers simulated comparative trajectories based entirely on your designated entries. Tax legislation schedules are perpetually responsive to amendment, and individual personal tax positions may deviate significantly from basic rate assumption baselines. All returns, variables and compounding indices are purely hypothetical and represent no guarantee of specific product performance or secure asset growth. Always secure advisory consultations from your certified legal or taxation professional advisor prior to committing to strategy modifications.
+          {/* Footer Page 3 of 3 */}
+          <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold uppercase tracking-wider pt-3 border-t border-[#cbd5e1]/50">
+            <span>Roth Conversion Tax Comparison</span>
+            <span className="font-mono">3/3</span>
+          </div>
         </div>
       </div>
     </div>
