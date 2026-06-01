@@ -1088,9 +1088,9 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
       { year: 18, premium: "0", rate: "5.95%", accum: "433,299", deathBenefit: "401,971" },
       { year: 19, premium: "0", rate: "5.95%", accum: "455,641", deathBenefit: "375,584" },
     ],
-    actualTotals: { premium: "220,000", rate: "6.11%" },
+    actualTotals: { premium: "220,000", rate: "6.26%" },
     illustratedTotals: { premium: "220,000", rate: "5.95%" },
-    finalAnalysis: "This policy was issued in 2008 and has been active for 19 years. With a total premium of $220,000 paid over the first 5 years, the policy has grown to an accumulation value of $482,947. Despite several years of 0% interest credits, the policy has achieved a cumulative average return of approximately 6.11%, outperforming the original illustration's projection of $455,641. This demonstrates the stability and long-term growth potential of the IUL product even through volatile market cycles."
+    finalAnalysis: "This policy was issued in 2008 and has been active for 19 years. With a total premium of $220,000 paid over the first 5 years, the policy has grown to an accumulation value of $482,947. Despite several years of 0% interest credits, the policy has achieved a cumulative average return of approximately 6.26%, outperforming the original illustration's projection of $455,641. This demonstrates the stability and long-term growth potential of the IUL product even through volatile market cycles."
   },
   { 
     id: 3, 
