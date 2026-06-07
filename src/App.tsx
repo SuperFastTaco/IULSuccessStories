@@ -1188,9 +1188,9 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
       { year: 15, premium: "0", rate: "7.42%", accum: "168,120", deathBenefit: "512,549" },
       { year: 16, premium: "0", rate: "7.42%", accum: "178,541", deathBenefit: "512,549" },
     ],
-    actualTotals: { premium: "100,000", rate: "7.42%" },
+    actualTotals: { premium: "100,000", rate: "8.05%" },
     illustratedTotals: { premium: "100,000", rate: "7.42%" },
-    finalAnalysis: "This 16-year-old policy demonstrates consistent growth and the long-term reliability of the IUL strategy. After 16 years, the policy has an accumulation value of $189,405, having averaged a 7.42% annual return. This performance tracks perfectly with the original illustration's 7.42% projection, proving that even with market fluctuations, the strategy remains on target over the long term."
+    finalAnalysis: "This 16-year-old policy demonstrates consistent growth and the long-term reliability of the IUL strategy. After 16 years, the policy has an accumulation value of $189,405, having averaged an 8.05% annual return. This performance outperforms the original illustration's 7.42% projection, proving that even with market fluctuations, the strategy remains outstanding over the long term."
   },
   { 
     id: 5, 
@@ -1239,9 +1239,9 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
       { year: 13, premium: "5,400", rate: "7.00%", accum: "97,098", deathBenefit: "347,098" },
       { year: 14, premium: "5,400", rate: "7.00%", accum: "108,895", deathBenefit: "358,895" },
     ],
-    actualTotals: { premium: "58,964", rate: "6.81%" },
+    actualTotals: { premium: "58,964", rate: "6.80%" },
     illustratedTotals: { premium: "75,600", rate: "7.00%" },
-    finalAnalysis: "This 14-year-old policy, issued to a 28-year-old client, demonstrates the power of starting early and the stability of the IUL strategy. With a total premium of $58,964 paid, the policy has grown to an accumulation value of $90,036. Over the 14-year period, the policy has achieved an average annual return of 6.81%, tracking closely with the original illustration's 7.00% projection. This case study highlights how consistent funding and market-linked growth can build significant cash value over time, while maintaining a substantial death benefit for long-term security."
+    finalAnalysis: "This 14-year-old policy, issued to a 28-year-old client, demonstrates the power of starting early and the stability of the IUL strategy. With a total premium of $58,964 paid, the policy has grown to an accumulation value of $90,036. Over the 14-year period, the policy has achieved an average annual return of 6.80%, tracking closely with the original illustration's 7.00% projection. This case study highlights how consistent funding and market-linked growth can build significant cash value over time, while maintaining a substantial death benefit for long-term security."
   },
   { 
     id: 6, 
@@ -1282,7 +1282,7 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
       { year: 9, premium: "0", rate: "6.86%", accum: "1,822,289", deathBenefit: "3,649,596" },
       { year: 10, premium: "0", rate: "6.86%", accum: "1,916,597", deathBenefit: "3,649,596" },
     ],
-    actualTotals: { premium: "1,590,561", rate: "5.66%" },
+    actualTotals: { premium: "1,590,561", rate: "6.18%" },
     illustratedTotals: { premium: "1,590,561", rate: "6.86%" },
     finalAnalysis: "The policy started off ahead of schedule and fell behind after 3 years of below average index credits and because the client took an unplanned loan sooner than expected. Despite these challenges, the policy maintains a significant accumulation value of $1,701,487 and continues to provide a substantial death benefit, demonstrating the long-term viability of the premium finance strategy even when adjustments are required."
   },
@@ -1393,7 +1393,7 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
       { year: 10, premium: "0", rate: "7.00%", accum: "13,082,060", deathBenefit: "21,500,000" },
       { year: 11, premium: "0", rate: "7.00%", accum: "13,728,794", deathBenefit: "21,500,000" },
     ],
-    actualTotals: { premium: "14,214,552", rate: "6.54%" },
+    actualTotals: { premium: "14,214,552", rate: "6.50%" },
     illustratedTotals: { premium: "11,055,765", rate: "7.00%" },
     finalAnalysis: "This massive $37 million policy represents the pinnacle of high-performance IUL strategies. With over $14 million in premiums paid, the policy has achieved an accumulation value of $16.4 million in just 11 years, significantly outperforming the original illustration's projection of $13.7 million. Despite market volatility, including years with 0% credits, the policy's ability to capture high-performance years (like the 21.04% credit in 2017) has propelled it far ahead of schedule. This case study demonstrates how 'big numbers' and strategic funding can create a powerful financial engine that provides both substantial cash value growth and an extraordinary death benefit."
   },
