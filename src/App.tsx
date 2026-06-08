@@ -80,6 +80,14 @@ const CopyLinkButton = ({ nav, storyId, educationId, className, iconOnly = false
 };
 
 const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
+  const formatCurrencyCompact = (v: any) => {
+    const num = Number(v);
+    if (isNaN(num)) return v;
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+    if (num >= 1000) return `$${Math.round(num / 1000).toLocaleString()}k`;
+    return `$${num}`;
+  };
+
   if (type === 'term-cost') {
     const data = [
       { age: 30, cost: 200 },
@@ -93,10 +101,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">The "Fatal Flaw" of Term Insurance: Rising Costs</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <LineChart data={data}>
+          <LineChart data={data} margin={{ top: 10, right: 10, left: 20, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-            <XAxis dataKey="age" label={{ value: 'Age', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Annual Premium ($)', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="age" label={{ value: 'Age', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={80} tickFormatter={formatCurrencyCompact} label={{ value: 'Annual Premium ($)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`$${value.toLocaleString()}`, 'Annual Cost']}
@@ -126,10 +134,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">IUL 0% Floor vs. S&P 500 (Historical Example)</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 15 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="year" />
-            <YAxis label={{ value: 'Annual Return (%)', angle: -90, position: 'insideLeft' }} />
+            <YAxis width={65} tickFormatter={(val) => `${val}%`} label={{ value: 'Annual Return (%)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`${value}%`, '']}
@@ -156,10 +164,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">The "Safety Net" Gap: Savings vs. IUL Death Benefit</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 20, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-            <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Value ($)', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={80} tickFormatter={formatCurrencyCompact} label={{ value: 'Value ($)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`$${value.toLocaleString()}`, '']}
@@ -192,10 +200,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">US Historical Top Marginal Tax Rates</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <LineChart data={data}>
+          <LineChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 15 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="year" />
-            <YAxis label={{ value: 'Tax Rate (%)', angle: -90, position: 'insideLeft' }} />
+            <YAxis width={65} tickFormatter={(val) => `${val}%`} label={{ value: 'Tax Rate (%)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`${value}%`, 'Top Rate']}
@@ -220,10 +228,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">The Brutal Math of Market Losses</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data} layout="vertical">
+          <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-            <XAxis type="number" label={{ value: 'Percentage (%)', position: 'insideBottom', offset: -5 }} />
-            <YAxis dataKey="loss" type="category" label={{ value: 'Market Loss (%)', angle: -90, position: 'insideLeft' }} />
+            <XAxis type="number" label={{ value: 'Percentage (%)', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={90} dataKey="loss" type="category" tickFormatter={(val) => `${val}%`} label={{ value: 'Market Loss (%)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`${value}%`, 'Gain Needed to Recover']}
@@ -330,10 +338,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Cumulative Internal Expenses: Commission vs. Correct Design</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 20, bottom: 15 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="name" />
-            <YAxis label={{ value: 'Total Expenses ($)', angle: -90, position: 'insideLeft' }} />
+            <YAxis width={80} tickFormatter={formatCurrencyCompact} label={{ value: 'Total Expenses ($)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`$${value.toLocaleString()}`, '']}
@@ -360,7 +368,7 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Account Value Growth: The Cost of Improper Design</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ top: 10, right: 15, left: 20, bottom: 25 }}>
             <defs>
               <linearGradient id="colorCorrect" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -372,8 +380,8 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-            <XAxis dataKey="year" label={{ value: 'Policy Year', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Account Value ($)', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="year" label={{ value: 'Policy Year', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={80} tickFormatter={formatCurrencyCompact} label={{ value: 'Account Value ($)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`$${value.toLocaleString()}`, '']}
@@ -414,7 +422,7 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Actual Performance vs. Original 2008 Illustration</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ top: 10, right: 15, left: 20, bottom: 20 }}>
             <defs>
               <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -423,7 +431,7 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="year" />
-            <YAxis label={{ value: 'Cash Value ($)', angle: -90, position: 'insideLeft' }} />
+            <YAxis width={80} tickFormatter={formatCurrencyCompact} label={{ value: 'Cash Value ($)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`$${value.toLocaleString()}`, '']}
@@ -464,10 +472,10 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
         <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Annual Index Interest Credits (2008-2026)</h4>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 15 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="year" />
-            <YAxis label={{ value: 'Interest Credit (%)', angle: -90, position: 'insideLeft' }} />
+            <YAxis width={65} tickFormatter={(val) => `${val}%`} label={{ value: 'Interest Credit (%)', angle: -90, position: 'insideLeft', offset: 10 }} />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value) => [`${value}%`, 'Interest Credit']}
