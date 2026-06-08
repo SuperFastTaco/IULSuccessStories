@@ -39,6 +39,7 @@ export default async function handler(req: any, res: any) {
       contentCategory,
       clientUserAgent,
       clientIpAddress,
+      testEventCode,
     } = req.body;
 
     const accessToken = process.env.META_ACCESS_TOKEN;
@@ -46,7 +47,7 @@ export default async function handler(req: any, res: any) {
 
     if (!accessToken || !pixelId) {
       console.error("Meta Credentials Missing: META_ACCESS_TOKEN or META_PIXEL_ID");
-      return res.status(500).json({ error: "Configuration error" });
+      return res.status(500).json({ error: "Configuration error: Meta key/id environment variables are missing." });
     }
 
     const userData: any = {};
@@ -65,7 +66,7 @@ export default async function handler(req: any, res: any) {
     if (contentName) customData.content_name = contentName;
     if (contentCategory) customData.content_category = contentCategory;
 
-    const eventData = {
+    const eventData: any = {
       data: [
         {
           event_name: eventName,
@@ -77,6 +78,10 @@ export default async function handler(req: any, res: any) {
         },
       ],
     };
+
+    if (testEventCode) {
+      eventData.test_event_code = testEventCode;
+    }
 
     const fbResponse = await fetch(
       `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,

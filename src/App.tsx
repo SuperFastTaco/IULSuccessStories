@@ -27,7 +27,12 @@ import {
   Link as LinkIcon,
   Check,
   Share2,
-  Calculator
+  Calculator,
+  Activity,
+  Terminal,
+  AlertCircle,
+  Trash2,
+  Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import RothConversionCalculator from './components/RothConversionCalculator';
@@ -1500,6 +1505,24 @@ export default function App() {
   const [selectedStoryId, setSelectedStoryId] = useState<number | null>(null);
   const [selectedEducationId, setSelectedEducationId] = useState<number | null>(null);
 
+  // Meta Conversions API (CAPI) Testing states
+  const [testEventCode, setTestEventCode] = useState<string>(() => {
+    return localStorage.getItem('meta_capi_test_event_code') || '';
+  });
+  const [isTestModeEnabled, setIsTestModeEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('meta_capi_test_mode') === 'true';
+  });
+
+  const saveTestEventCode = (code: string) => {
+    setTestEventCode(code);
+    localStorage.setItem('meta_capi_test_event_code', code);
+  };
+
+  const saveTestModeEnabled = (enabled: boolean) => {
+    setIsTestModeEnabled(enabled);
+    localStorage.setItem('meta_capi_test_mode', enabled ? 'true' : 'false');
+  };
+
   // URL Deep Linking logic
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1525,15 +1548,21 @@ export default function App() {
 
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
     try {
+      const bodyPayload: any = {
+        eventName,
+        url: window.location.href,
+        clientUserAgent: navigator.userAgent,
+        ...params
+      };
+
+      if (isTestModeEnabled && testEventCode) {
+        bodyPayload.testEventCode = testEventCode;
+      }
+
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventName,
-          url: window.location.href,
-          clientUserAgent: navigator.userAgent,
-          ...params
-        }),
+        body: JSON.stringify(bodyPayload),
       });
     } catch (error) {
       console.error('Meta tracking error:', error);
@@ -3803,19 +3832,25 @@ export default function App() {
       setStatus('submitting');
 
       try {
+        const bodyPayload: any = {
+          firstName: formData.name,
+          email: formData.email,
+          message: formData.feedback,
+          eventName: 'Contact',
+          url: window.location.href,
+          clientUserAgent: navigator.userAgent,
+        };
+
+        if (isTestModeEnabled && testEventCode) {
+          bodyPayload.testEventCode = testEventCode;
+        }
+
         const response = await fetch('/api/lead', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            firstName: formData.name,
-            email: formData.email,
-            message: formData.feedback,
-            eventName: 'Contact',
-            url: window.location.href,
-            clientUserAgent: navigator.userAgent,
-          }),
+          body: JSON.stringify(bodyPayload),
         });
 
         if (response.ok) {
@@ -3828,6 +3863,353 @@ export default function App() {
         console.error('Submission error:', error);
         setStatus('error');
       }
+    };
+
+    const MetaCapiVerificationSuite = () => {
+      const [testTerminalLogs, setTestTerminalLogs] = useState<{
+        id: string;
+        timestamp: string;
+        type: 'info' | 'success' | 'error';
+        message: string;
+        details?: any;
+        isExpanded?: boolean;
+      }[]>(() => {
+        return [{
+          id: 'init',
+          timestamp: new Date().toLocaleTimeString(),
+          type: 'info',
+          message: '💻 CAPI Live Test Bed Active. Ready to transmit verification payloads.'
+        }];
+      });
+      const [isTriggeringTest, setIsTriggeringTest] = useState<string | null>(null);
+      const [tempEventCode, setTempEventCode] = useState(testEventCode);
+
+      const addTerminalLog = (type: 'info' | 'success' | 'error', message: string, details?: any) => {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        setTestTerminalLogs(prev => [
+          {
+            id: Math.random().toString(),
+            timestamp: timeStr,
+            type,
+            message,
+            details,
+            isExpanded: false
+          },
+          ...prev
+        ].slice(0, 50));
+      };
+
+      const toggleLogExpansion = (id: string) => {
+        setTestTerminalLogs(prev => prev.map(log => log.id === id ? { ...log, isExpanded: !log.isExpanded } : log));
+      };
+
+      const triggerCapiTestEvent = async (testName: string, eventName: string, payload: any) => {
+        setIsTriggeringTest(testName);
+        addTerminalLog('info', `Simulating event "${eventName}"... Sending plaintext fields.`, payload);
+        
+        try {
+          const bodyWithTest = {
+            eventName,
+            ...payload,
+            url: window.location.href,
+            clientUserAgent: navigator.userAgent
+          };
+
+          if (testEventCode) {
+            bodyWithTest.testEventCode = testEventCode;
+          }
+
+          const response = await fetch('/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyWithTest)
+          });
+
+          let data: any = {};
+          try {
+            data = await response.json();
+          } catch (e) {
+            data = { error: `Invalid content returned. HTTP status ${response.status}` };
+          }
+
+          if (response.ok) {
+            addTerminalLog(
+              'success', 
+              `Received 200 OK! Meta Trace ID: ${data.fbTraceId || 'fb_trace_none'}. Event "${eventName}" transmitted successfully. Check your Meta "Test events" dashboard under "IUL Success Stories Dataset"!`,
+              data
+            );
+          } else {
+            addTerminalLog(
+              'error',
+              `Meta CAPI Rejected (${response.status}): ${data.error || data.message || 'Validation failed.'}`,
+              data
+            );
+          }
+        } catch (error: any) {
+          addTerminalLog('error', `Connection error: ${error.message || 'Fail to reach /api/lead endpoint.'}`);
+        } finally {
+          setIsTriggeringTest(null);
+        }
+      };
+
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900/40 p-8 md:p-12 rounded-[3rem] border border-slate-150 dark:border-slate-800 text-left">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10 pb-8 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/80 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                </span>
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-white">Meta CAPI Live Testing Console</h3>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Verify server-side telemetry events and data-rich hashing in real time.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4 bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Test Mode</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = !isTestModeEnabled;
+                  saveTestModeEnabled(val);
+                  addTerminalLog('info', `CAPI Test Mode turned ${val ? 'ON. General page browsing events will now carry your test code!' : 'OFF. Browsing events are run normally.'}`);
+                }}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors cursor-pointer outline-none ${
+                  isTestModeEnabled ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-750'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
+                    isTestModeEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-8">
+              {/* Step 1 & 2 */}
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">1</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200">Configure Your Test Event Code</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                      This parameters matches your local machine browser events directly with your Meta Event Manager window.
+                    </p>
+                    
+                    <div className="flex gap-2">
+                      <input 
+                        type="text"
+                        value={tempEventCode}
+                        onChange={(e) => setTempEventCode(e.target.value.trim().toUpperCase())}
+                        placeholder="e.g., TEST79284"
+                        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          saveTestEventCode(tempEventCode);
+                          addTerminalLog('info', `Successfully updated Meta Test Event Code: "${tempEventCode || 'None'}"`);
+                        }}
+                        className="px-5 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 transition-all cursor-pointer shadow-sm"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tips */}
+              <div className="bg-slate-100/60 dark:bg-slate-900 rounded-2xl p-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border border-slate-200/50 dark:border-slate-800">
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">📋 Quick Guide</p>
+                <p>
+                  1. Visit the <strong>Test events</strong> tab in your Meta Events Manager under <strong>IUL Success Stories Dataset</strong>.<br />
+                  2. Select <strong>Confirm your server events are set up correctly</strong>.<br />
+                  3. Copy the test event code (e.g., <strong>TEST81639</strong>) and save it above.<br />
+                  4. Trigger any simulation button below and watch it appear in Meta instantly!
+                </p>
+              </div>
+
+              {/* Triggers */}
+              <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">2</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Simulation Triggers</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                      Instantly dispatch full standard pixel event schemas containing test customer keys (hashed server-side).
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* ViewContent Story */}
+                      <button
+                        type="button"
+                        disabled={isTriggeringTest !== null}
+                        onClick={() => triggerCapiTestEvent('story-view', 'ViewContent', {
+                          contentName: 'Kevin Nuber - ADC Policy Case Study',
+                          contentCategory: 'Case Study Portfolio',
+                          email: 'john.client@iulsuccess.com',
+                          firstName: 'Kevin',
+                          lastName: 'Nuber',
+                          city: 'New York',
+                          state: 'NY'
+                        })}
+                        className="flex flex-col items-start p-4 hover:bg-white dark:hover:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity size={16} className="text-amber-500 group-hover:scale-115 transition-transform" />
+                          <span className="font-bold text-sm text-slate-800 dark:text-slate-200">ViewContent (Case Study)</span>
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-450 truncate w-full">Visitor opens Kevin Nuber story</span>
+                      </button>
+
+                      {/* ViewContent Article */}
+                      <button
+                        type="button"
+                        disabled={isTriggeringTest !== null}
+                        onClick={() => triggerCapiTestEvent('edu-view', 'ViewContent', {
+                          contentName: 'The Fatal Flaw of Term Life Policies',
+                          contentCategory: 'Education Guide',
+                          email: 'jane.learner@iulsuccess.com',
+                          firstName: 'Jane',
+                          lastName: 'Smith',
+                          city: 'Denver',
+                          state: 'CO'
+                        })}
+                        className="flex flex-col items-start p-4 hover:bg-white dark:hover:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen size={16} className="text-blue-500 group-hover:scale-115 transition-transform" />
+                          <span className="font-bold text-sm text-slate-800 dark:text-slate-200">ViewContent (Education)</span>
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-450 truncate w-full">Visitor reads educational article</span>
+                      </button>
+
+                      {/* Contact Trigger */}
+                      <button
+                        type="button"
+                        disabled={isTriggeringTest !== null}
+                        onClick={() => triggerCapiTestEvent('contact-simulate', 'Contact', {
+                          firstName: 'Alex',
+                          email: 'alex.capi@example.org',
+                          message: 'Real-time api link testing is operational!',
+                          zip: '84102',
+                          city: 'Salt Lake City',
+                          state: 'UT'
+                        })}
+                        className="flex flex-col items-start p-4 hover:bg-white dark:hover:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Mail size={16} className="text-emerald-500 group-hover:scale-115 transition-transform" />
+                          <span className="font-bold text-sm text-slate-800 dark:text-slate-200">Contact Event</span>
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-450 truncate w-full">Sends user feedback schema</span>
+                      </button>
+
+                      {/* Lead Trigger */}
+                      <button
+                        type="button"
+                        disabled={isTriggeringTest !== null}
+                        onClick={() => triggerCapiTestEvent('lead-simulate', 'Lead', {
+                          firstName: 'Robert',
+                          lastName: 'Miller',
+                          email: 'robert.test@iulsuccess.com',
+                          phone: '801-555-4321',
+                          zip: '90210',
+                          city: 'Beverly Hills',
+                          state: 'CA',
+                          contentName: 'Roth Conversion Calculator Backtest Session'
+                        })}
+                        className="flex flex-col items-start p-4 hover:bg-white dark:hover:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <ShieldCheck size={16} className="text-primary group-hover:scale-115 transition-transform" />
+                          <span className="font-bold text-sm text-slate-800 dark:text-slate-200">Lead Event (Premium)</span>
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-450 truncate w-full">Generates a high-value calculator lead</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Console Log Stream */}
+            <div className="lg:col-span-5 flex flex-col h-full min-h-[400px]">
+              <div className="bg-slate-950 dark:bg-black rounded-3xl border border-slate-800 dark:border-slate-850 overflow-hidden flex flex-col h-full text-slate-200 font-mono text-[11px] flex-1">
+                {/* Console Header */}
+                <div className="flex items-center justify-between px-5 py-3 border-b border-slate-850 bg-slate-900/50 font-sans tracking-tight shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Terminal size={14} className="text-primary" />
+                    <span className="font-bold text-slate-300">Diagnostic Stream</span>
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 relative ml-1">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTestTerminalLogs([{
+                      id: 'clear',
+                      timestamp: new Date().toLocaleTimeString(),
+                      type: 'info',
+                      message: '🧹 Terminal purged. Diagnostic logs cleared.'
+                    }])}
+                    className="p-1 hover:text-white transition-colors cursor-pointer text-slate-500"
+                    title="Purge logs"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+
+                {/* Console Log Area */}
+                <div className="flex-1 p-5 overflow-y-auto space-y-4 max-h-[440px] text-left">
+                  {testTerminalLogs.map((log) => (
+                    <div key={log.id} className="space-y-2 pb-2 border-b border-slate-900/40">
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500 select-none shrink-0">{log.timestamp}</span>
+                        <div className="flex-1">
+                          <span className={`font-bold mr-1.5 shrink-0 ${
+                            log.type === 'success' ? 'text-emerald-400' :
+                            log.type === 'error' ? 'text-rose-400' : 'text-blue-400'
+                          }`}>
+                            {log.type === 'success' ? '✔' : log.type === 'error' ? '✖' : 'ℹ'}
+                          </span>
+                          <span className="text-slate-300 leading-relaxed break-words">{log.message}</span>
+                        </div>
+                      </div>
+
+                      {log.details && (
+                        <div className="pl-14">
+                          <button
+                            type="button"
+                            onClick={() => toggleLogExpansion(log.id)}
+                            className="text-[10px] text-slate-500 hover:text-slate-300 underline cursor-pointer outline-none font-sans"
+                          >
+                            {log.isExpanded ? 'Hide Payload Spec' : 'Inspect Payload Spec'}
+                          </button>
+                          
+                          {log.isExpanded && (
+                            <pre className="mt-2 p-3 bg-slate-900 rounded-lg text-[9px] text-slate-400 overflow-x-auto whitespace-pre-wrap leading-relaxed max-w-full">
+                              {JSON.stringify(log.details, null, 2)}
+                            </pre>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     };
 
     return (
@@ -3929,6 +4311,11 @@ export default function App() {
               </button>
             </form>
           )}
+
+          {/* Conversions API (CAPI) Interactive Live Verification Suite */}
+          <div className="mt-20 border-t border-slate-200 dark:border-slate-800 pt-16">
+            <MetaCapiVerificationSuite />
+          </div>
         </div>
       </div>
     );
