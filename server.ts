@@ -20,6 +20,14 @@ async function startServer() {
   }
 
   // API routes
+  app.get("/api/pixel-id", (req, res) => {
+    const pixelId = process.env.META_PIXEL_ID;
+    if (!pixelId) {
+      return res.status(404).json({ error: "Meta Pixel ID not configured" });
+    }
+    return res.status(200).json({ pixelId });
+  });
+
   app.post("/api/lead", async (req, res) => {
     try {
       const {
@@ -36,6 +44,8 @@ async function startServer() {
         contentCategory,
         clientUserAgent,
         clientIpAddress,
+        testEventCode,
+        eventId,
       } = req.body;
 
       const accessToken = process.env.META_ACCESS_TOKEN;
@@ -62,11 +72,12 @@ async function startServer() {
       if (contentName) customData.content_name = contentName;
       if (contentCategory) customData.content_category = contentCategory;
 
-      const eventData = {
+      const eventData: any = {
         data: [
           {
             event_name: eventName,
             event_time: Math.floor(Date.now() / 1000),
+            event_id: eventId || undefined,
             action_source: "website",
             event_source_url: url || "",
             user_data: userData,
@@ -74,6 +85,10 @@ async function startServer() {
           },
         ],
       };
+
+      if (testEventCode) {
+        eventData.test_event_code = testEventCode;
+      }
 
       const fbResponse = await fetch(
         `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,

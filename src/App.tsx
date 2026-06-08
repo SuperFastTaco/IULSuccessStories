@@ -1512,6 +1512,7 @@ export default function App() {
   const [isTestModeEnabled, setIsTestModeEnabled] = useState<boolean>(() => {
     return localStorage.getItem('meta_capi_test_mode') === 'true';
   });
+  const [pixelId, setPixelId] = useState<string | null>(null);
 
   const saveTestEventCode = (code: string) => {
     setTestEventCode(code);
@@ -1522,6 +1523,46 @@ export default function App() {
     setIsTestModeEnabled(enabled);
     localStorage.setItem('meta_capi_test_mode', enabled ? 'true' : 'false');
   };
+
+  // Safe client-side Meta Pixel initialisation
+  useEffect(() => {
+    const initClientPixel = async () => {
+      try {
+        const response = await fetch('/api/pixel-id');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.pixelId) {
+            setPixelId(data.pixelId);
+            
+            // Standard Meta Pixel insertion snippet
+            (function (f: any, b: any, e: string, v: string, n?: any,_t?: any, _s?: any) {
+              if (f.fbq) return;
+              n = f.fbq = function () {
+                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+              };
+              if (!f._fbq) f._fbq = n;
+              n.push = n;
+              n.loaded = !0;
+              n.version = '2.0';
+              n.queue = [];
+              const t = b.createElement(e);
+              t.async = !0;
+              t.src = v;
+              const s = b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t, s);
+            })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+            (window as any).fbq('init', data.pixelId);
+            (window as any).fbq('track', 'PageView');
+            console.log(`[Meta Pixel] Dynamic Pixel initialized: ${data.pixelId}`);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to dynamically check or load Meta Pixel SDK:', err);
+      }
+    };
+    initClientPixel();
+  }, []);
 
   // URL Deep Linking logic
   useEffect(() => {
@@ -1548,10 +1589,30 @@ export default function App() {
 
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
     try {
+      const eventId = 'evt_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+
+      // Send to the browser Meta Pixel (if loaded)
+      if ((window as any).fbq) {
+        try {
+          const browserParams: any = {};
+          if (params.contentName) browserParams.content_name = params.contentName;
+          if (params.contentCategory) browserParams.content_category = params.contentCategory;
+          
+          if (['ViewContent', 'Search', 'AddToCart', 'InitiateCheckout', 'Purchase', 'Lead', 'Contact'].includes(eventName)) {
+            (window as any).fbq('track', eventName, browserParams, { eventID: eventId });
+          } else {
+            (window as any).fbq('trackCustom', eventName, browserParams, { eventID: eventId });
+          }
+        } catch (fbErr) {
+          console.warn('[Meta Pixel Browser tracking failed]', fbErr);
+        }
+      }
+
       const bodyPayload: any = {
         eventName,
         url: window.location.href,
         clientUserAgent: navigator.userAgent,
+        eventId,
         ...params
       };
 
@@ -3906,12 +3967,35 @@ export default function App() {
 
       const triggerCapiTestEvent = async (testName: string, eventName: string, payload: any) => {
         setIsTriggeringTest(testName);
-        addTerminalLog('info', `Simulating event "${eventName}"... Sending plaintext fields.`, payload);
+        addTerminalLog('info', `Simulating event "${eventName}"... Preparing payload.`, payload);
         
         try {
+          const matchedEventId = 'evt_test_' + Math.random().toString(36).substring(2, 10).toUpperCase() + '_' + Date.now();
+
+          // Dispatch standard Browser Pixel (if loaded)
+          if ((window as any).fbq) {
+            try {
+              const browserParams: any = {};
+              if (payload.contentName) browserParams.content_name = payload.contentName;
+              if (payload.contentCategory) browserParams.content_category = payload.contentCategory;
+              
+              if (['ViewContent', 'Lead', 'Contact'].includes(eventName)) {
+                (window as any).fbq('track', eventName, browserParams, { eventID: matchedEventId });
+              } else {
+                (window as any).fbq('trackCustom', eventName, browserParams, { eventID: matchedEventId });
+              }
+              addTerminalLog('info', `🔊 Dispatching browser event with Deduction Tag (Event ID): "${matchedEventId}"`);
+            } catch (fbErr: any) {
+              addTerminalLog('info', `⚠️ Browser Pixel blocked: ${fbErr.message || fbErr}`);
+            }
+          } else {
+            addTerminalLog('info', `⚠️ Browser Pixel is not loaded in window (or adblocker is active). Pure server event will transmit.`);
+          }
+
           const bodyWithTest = {
             eventName,
             ...payload,
+            eventId: matchedEventId,
             url: window.location.href,
             clientUserAgent: navigator.userAgent
           };
@@ -3919,6 +4003,8 @@ export default function App() {
           if (testEventCode) {
             bodyWithTest.testEventCode = testEventCode;
           }
+
+          addTerminalLog('info', `🛰️ Sending CAPI server event with matched Deduction Tag...`);
 
           const response = await fetch('/api/lead', {
             method: 'POST',
@@ -3936,7 +4022,7 @@ export default function App() {
           if (response.ok) {
             addTerminalLog(
               'success', 
-              `Received 200 OK! Meta Trace ID: ${data.fbTraceId || 'fb_trace_none'}. Event "${eventName}" transmitted successfully. Check your Meta "Test events" dashboard under "IUL Success Stories Dataset"!`,
+              `Received server 200 OK! Meta Trace ID: ${data.fbTraceId || 'fb_trace_none'}. Event "${eventName}" transmitted. Look at "Test events" dashboard under "IUL Success Stories Dataset" for combined Browser/Server deduplicated rows!`,
               data
             );
           } else {

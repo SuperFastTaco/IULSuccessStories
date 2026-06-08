@@ -40,6 +40,7 @@ export default async function handler(req: any, res: any) {
       clientUserAgent,
       clientIpAddress,
       testEventCode,
+      eventId,
     } = req.body;
 
     const accessToken = process.env.META_ACCESS_TOKEN;
@@ -71,6 +72,7 @@ export default async function handler(req: any, res: any) {
         {
           event_name: eventName,
           event_time: Math.floor(Date.now() / 1000),
+          event_id: eventId || undefined,
           action_source: "website",
           event_source_url: url || "",
           user_data: userData,
