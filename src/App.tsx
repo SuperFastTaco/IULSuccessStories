@@ -1480,6 +1480,24 @@ EDUCATION_CONTENT.push(NEW_ARTICLE);
   },
 ];
 
+const getCookie = (name: string) => {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (match) return match[2];
+  return undefined;
+};
+
+const getFbc = () => {
+  let fbc = getCookie('_fbc');
+  if (!fbc) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fbclid = urlParams.get('fbclid');
+    if (fbclid) {
+      fbc = `fb.1.${Date.now()}.${fbclid}`;
+    }
+  }
+  return fbc;
+};
+
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1613,6 +1631,8 @@ export default function App() {
         url: window.location.href,
         clientUserAgent: navigator.userAgent,
         eventId,
+        fbc: getFbc(),
+        fbp: getCookie('_fbp'),
         ...params
       };
 
@@ -3900,6 +3920,8 @@ export default function App() {
           eventName: 'Contact',
           url: window.location.href,
           clientUserAgent: navigator.userAgent,
+          fbc: getFbc(),
+          fbp: getCookie('_fbp'),
         };
 
         if (isTestModeEnabled && testEventCode) {
@@ -3992,12 +4014,14 @@ export default function App() {
             addTerminalLog('info', `⚠️ Browser Pixel is not loaded in window (or adblocker is active). Pure server event will transmit.`);
           }
 
-          const bodyWithTest = {
+          const bodyWithTest: any = {
             eventName,
             ...payload,
             eventId: matchedEventId,
             url: window.location.href,
-            clientUserAgent: navigator.userAgent
+            clientUserAgent: navigator.userAgent,
+            fbc: getFbc(),
+            fbp: getCookie('_fbp'),
           };
 
           if (testEventCode) {

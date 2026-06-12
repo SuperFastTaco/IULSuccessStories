@@ -46,6 +46,8 @@ async function startServer() {
         clientIpAddress,
         testEventCode,
         eventId,
+        fbc,
+        fbp,
       } = req.body;
 
       const accessToken = process.env.META_ACCESS_TOKEN;
@@ -64,6 +66,8 @@ async function startServer() {
       if (city) userData.ct = [hash(city)];
       if (state) userData.st = [hash(state)];
       if (zip) userData.zp = [hash(zip)];
+      if (fbc) userData.fbc = fbc;
+      if (fbp) userData.fbp = fbp;
 
       userData.client_user_agent = clientUserAgent || req.headers["user-agent"];
       userData.client_ip_address = clientIpAddress || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
