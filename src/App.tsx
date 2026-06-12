@@ -1571,7 +1571,6 @@ export default function App() {
             })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
             (window as any).fbq('init', data.pixelId);
-            (window as any).fbq('track', 'PageView');
             console.log(`[Meta Pixel] Dynamic Pixel initialized: ${data.pixelId}`);
           }
         }
@@ -1616,7 +1615,7 @@ export default function App() {
           if (params.contentName) browserParams.content_name = params.contentName;
           if (params.contentCategory) browserParams.content_category = params.contentCategory;
           
-          if (['ViewContent', 'Search', 'AddToCart', 'InitiateCheckout', 'Purchase', 'Lead', 'Contact'].includes(eventName)) {
+          if (['PageView', 'ViewContent', 'Search', 'AddToCart', 'InitiateCheckout', 'Purchase', 'Lead', 'Contact'].includes(eventName)) {
             (window as any).fbq('track', eventName, browserParams, { eventID: eventId });
           } else {
             (window as any).fbq('trackCustom', eventName, browserParams, { eventID: eventId });
@@ -1649,6 +1648,11 @@ export default function App() {
       console.error('Meta tracking error:', error);
     }
   };
+
+  useEffect(() => {
+    trackMetaEvent('PageView');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNav, selectedStoryId, selectedEducationId]);
 
   useEffect(() => {
     if (selectedStoryId !== null) {
