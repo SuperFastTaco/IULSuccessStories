@@ -3024,6 +3024,7 @@ export default function App() {
     const [participationRate, setParticipationRate] = useState<number>(100);
     const [floorRate, setFloorRate] = useState<number>(0);
     const [rollingYears, setRollingYears] = useState<number>(20);
+    const [customStartDate, setCustomStartDate] = useState<string>("1990-01-01");
 
     useEffect(() => {
       window.scrollTo(0, 0);
@@ -3117,6 +3118,11 @@ export default function App() {
 
       // Sliding window logic
       for (const [startDate, startLevel] of rows) {
+        // Enforce custom start date for all or specifically for S&P 500 depending on selection
+        if (selectedIndexName.includes("S&P 500") && customStartDate && startDate < customStartDate) {
+          continue;
+        }
+
         // Find terminating date
         const endDate = addYears(startDate, years);
         if (endDate > lastDate) {
@@ -3127,13 +3133,27 @@ export default function App() {
         const annualReturns: number[] = [];
         let hasCompletePeriod = true;
 
+        const getClosestLevel = (map: Map<string, number>, targetDate: string): number | undefined => {
+          let dateStr = targetDate;
+          for (let i = 0; i < 7; i++) {
+            const level = map.get(dateStr);
+            if (level !== undefined) return level;
+            // Subtract one day
+            const d = new Date(dateStr);
+            d.setUTCDate(d.getUTCDate() - 1);
+            dateStr = d.toISOString().split("T")[0];
+          }
+          return undefined;
+        };
+
         for (let year = 1; year <= years; year += 1) {
           const periodStart = addYears(startDate, year - 1);
           const periodEnd = addYears(startDate, year);
-          const periodStartLevel = levelByDate.get(periodStart);
-          const periodEndLevel = levelByDate.get(periodEnd);
+          
+          const periodStartLevel = getClosestLevel(levelByDate, periodStart);
+          const periodEndLevel = getClosestLevel(levelByDate, periodEnd);
 
-          if (!periodStartLevel || !periodEndLevel) {
+          if (periodStartLevel === undefined || periodEndLevel === undefined) {
             hasCompletePeriod = false;
             break;
           }
@@ -3220,7 +3240,7 @@ export default function App() {
         outperformed: outperformedCount / totalPeriods,
         chartDataPoints
       };
-    }, [payload, seriesMaps, selectedIndexName, capMode, capRate, participationRate, floorRate, rollingYears, activeMetadata]);
+    }, [payload, seriesMaps, selectedIndexName, customStartDate, capMode, capRate, participationRate, floorRate, rollingYears, activeMetadata]);
 
     const formatDate = (iso: string) => {
       if (!iso) return "";
@@ -3362,6 +3382,23 @@ export default function App() {
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 ml-1 leading-normal">
                       Available: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatDate(activeMetadata.firstDate)}</span> to <span className="font-semibold text-slate-700 dark:text-slate-300">{formatDate(activeMetadata.lastDate)}</span> (Max {activeMetadata.maxRollingYears} Years).
                     </p>
+                  )}
+                  {selectedIndexName.includes("S&P 500") && (
+                    <div className="mt-4 pt-4 border-t border-slate-150/50 dark:border-slate-800/50">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                        Custom Start Date
+                      </label>
+                      <input 
+                        type="date"
+                        max="2005-12-31"
+                        value={customStartDate}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-medium text-slate-950 dark:text-white"
+                      />
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 ml-1 leading-normal">
+                        Filters out backtest periods that begin before this date. Must be 2005 or older.
+                      </p>
+                    </div>
                   )}
                 </div>
 
