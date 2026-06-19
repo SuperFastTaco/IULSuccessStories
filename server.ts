@@ -28,6 +28,14 @@ async function startServer() {
     return res.status(200).json({ pixelId });
   });
 
+  app.get("/api/gtm-id", (req, res) => {
+    const gtmId = process.env.GOOGLE_TAG_MANAGER_ID;
+    if (!gtmId) {
+      return res.status(404).json({ error: "Google Tag Manager ID not configured" });
+    }
+    return res.status(200).json({ gtmId });
+  });
+
   app.post("/api/lead", async (req, res) => {
     try {
       const {

@@ -1581,6 +1581,31 @@ export default function App() {
     initClientPixel();
   }, []);
 
+  // Safe client-side GTM initialization
+  useEffect(() => {
+    const initClientGTM = async () => {
+      try {
+        const response = await fetch('/api/gtm-id');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.gtmId) {
+            // Standard GTM insertion snippet
+            (function(w:any,d:any,s:any,l:any,i:any){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer',data.gtmId);
+            
+            console.log(`[GTM] Dynamic GTM initialized: ${data.gtmId}`);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to dynamically check or load GTM SDK:', err);
+      }
+    };
+    initClientGTM();
+  }, []);
+
   // URL Deep Linking logic
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1607,6 +1632,16 @@ export default function App() {
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
     try {
       const eventId = 'evt_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+
+      // Send to GTM (Google Tag Manager) DataLayer if GTM is injected
+      if (typeof window !== "undefined") {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({
+          event: eventName,
+          ...params,
+          eventId
+        });
+      }
 
       // Send to the browser Meta Pixel (if loaded)
       if ((window as any).fbq) {
@@ -3967,6 +4002,16 @@ export default function App() {
 
         if (isTestModeEnabled && testEventCode) {
           bodyPayload.testEventCode = testEventCode;
+        }
+
+        // Push to GTM dataLayer
+        if (typeof window !== "undefined") {
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: 'Contact',
+            firstName: formData.name,
+            email: formData.email
+          });
         }
 
         const response = await fetch('/api/lead', {
