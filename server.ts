@@ -29,7 +29,7 @@ async function startServer() {
   });
 
   app.get("/api/gtm-id", (req, res) => {
-    const gtmId = process.env.GOOGLE_TAG_MANAGER_ID;
+    const gtmId = process.env.GOOGLE_TAG_MANAGER_ID || "GTM-TP5FW48X";
     if (!gtmId) {
       return res.status(404).json({ error: "Google Tag Manager ID not configured" });
     }
