@@ -249,6 +249,104 @@ const ArticleChart = ({ type }: { type: string; key?: React.Key }) => {
     );
   }
 
+  if (type === 'sp500-history') {
+    const data = [
+      { year: '1990', value: 330 },
+      { year: '1991', value: 417 },
+      { year: '1992', value: 435 },
+      { year: '1993', value: 466 },
+      { year: '1994', value: 459 },
+      { year: '1995', value: 615 },
+      { year: '1996', value: 740 },
+      { year: '1997', value: 970 },
+      { year: '1998', value: 1229 },
+      { year: '1999', value: 1469 },
+      { year: '2000', value: 1320 },
+      { year: '2001', value: 1148 },
+      { year: '2002', value: 879 },
+      { year: '2003', value: 1111 },
+      { year: '2004', value: 1211 },
+      { year: '2005', value: 1248 },
+      { year: '2006', value: 1418 },
+      { year: '2007', value: 1468 },
+      { year: '2008', value: 903 },
+      { year: '2009', value: 1115 },
+      { year: '2010', value: 1257 },
+      { year: '2011', value: 1257 },
+      { year: '2012', value: 1426 },
+      { year: '2013', value: 1848 },
+      { year: '2014', value: 2058 },
+      { year: '2015', value: 2043 },
+      { year: '2016', value: 2238 },
+      { year: '2017', value: 2673 },
+      { year: '2018', value: 2506 },
+      { year: '2019', value: 3230 },
+      { year: '2020', value: 3756 },
+      { year: '2021', value: 4766 },
+      { year: '2022', value: 3839 },
+      { year: '2023', value: 4769 },
+      { year: '2024', value: 5000 },
+    ];
+    return (
+      <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
+        <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">Historical S&P 500 Price Index</h4>
+        <ResponsiveContainer width="100%" height="80%">
+          <LineChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 25 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="year" minTickGap={30} label={{ value: 'Year', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={60} tickFormatter={(val) => Math.round(val).toLocaleString()} label={{ value: 'Index Value', angle: -90, position: 'insideLeft', offset: 10 }} />
+            <Tooltip 
+              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              formatter={(value) => [Math.round(Number(value)).toLocaleString(), 'Index Value']}
+            />
+            <Line type="linear" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+          </LineChart>
+        </ResponsiveContainer>
+        <p className="text-sm text-slate-500 mt-4 italic text-center">Historical performance shows long periods of upward movement, but with deep valleys along the way.</p>
+      </div>
+    );
+  }
+
+  if (type === 'treasury-10yr') {
+    const data = [
+      { year: '1974', rate: 7.56 }, { year: '1975', rate: 7.99 }, { year: '1976', rate: 7.61 },
+      { year: '1977', rate: 7.42 }, { year: '1978', rate: 8.41 }, { year: '1979', rate: 9.43 },
+      { year: '1980', rate: 11.43 }, { year: '1981', rate: 13.92 }, { year: '1982', rate: 13.00 },
+      { year: '1983', rate: 11.10 }, { year: '1984', rate: 12.44 }, { year: '1985', rate: 10.62 },
+      { year: '1986', rate: 7.67 }, { year: '1987', rate: 8.39 }, { year: '1988', rate: 8.85 },
+      { year: '1989', rate: 8.49 }, { year: '1990', rate: 8.55 }, { year: '1991', rate: 7.86 },
+      { year: '1992', rate: 7.01 }, { year: '1993', rate: 5.87 }, { year: '1994', rate: 7.09 },
+      { year: '1995', rate: 6.57 }, { year: '1996', rate: 6.44 }, { year: '1997', rate: 6.35 },
+      { year: '1998', rate: 5.26 }, { year: '1999', rate: 5.65 }, { year: '2000', rate: 6.03 },
+      { year: '2001', rate: 5.02 }, { year: '2002', rate: 4.61 }, { year: '2003', rate: 4.01 },
+      { year: '2004', rate: 4.27 }, { year: '2005', rate: 4.29 }, { year: '2006', rate: 4.80 },
+      { year: '2007', rate: 4.63 }, { year: '2008', rate: 3.66 }, { year: '2009', rate: 3.26 },
+      { year: '2010', rate: 3.22 }, { year: '2011', rate: 2.78 }, { year: '2012', rate: 1.80 },
+      { year: '2013', rate: 2.35 }, { year: '2014', rate: 2.54 }, { year: '2015', rate: 2.14 },
+      { year: '2016', rate: 1.84 }, { year: '2017', rate: 2.33 }, { year: '2018', rate: 2.91 },
+      { year: '2019', rate: 2.14 }, { year: '2020', rate: 0.89 }, { year: '2021', rate: 1.45 },
+      { year: '2022', rate: 2.95 }, { year: '2023', rate: 3.96 }, { year: '2024', rate: 4.20 }
+    ];
+    return (
+      <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl my-12 border border-slate-100 dark:border-slate-800">
+        <h4 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">10-Year Treasury Yield (Last 50 Years)</h4>
+        <ResponsiveContainer width="100%" height="80%">
+          <LineChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 25 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="year" minTickGap={30} label={{ value: 'Year', position: 'insideBottom', offset: -10 }} />
+            <YAxis width={60} tickFormatter={(val) => `${val}%`} label={{ value: 'Interest Rate (%)', angle: -90, position: 'insideLeft', offset: 10 }} />
+            <Tooltip 
+              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              formatter={(value) => [`${value}%`, 'Yield']}
+            />
+            <Line type="linear" dataKey="rate" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+          </LineChart>
+        </ResponsiveContainer>
+        <p className="text-sm text-slate-500 mt-4 italic text-center">Interest rates experienced a 40-year multi-generational decline to near-zero levels.</p>
+      </div>
+    );
+  }
+
   if (type === 'iul-bucket') {
     return (
       <div className="h-[400px] w-full bg-slate-50 dark:bg-slate-800/50 p-8 rounded-3xl my-12 border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center">
@@ -998,7 +1096,116 @@ When you strip away the arbitrarily huge death benefits and build an IUL the rig
 `
 };
 
+const IUL_GUARANTEES_ARTICLE: EducationItem = {
+  id: 13,
+  title: "IUL Guarantees are Misleading",
+  description: "Understand why the 'Guaranteed' ledger in a life insurance illustration is a worst-case scenario, and the statistical improbability of it actually happening.",
+  type: 'article',
+  duration: '10 min read',
+  category: 'Misconceptions',
+  image: 'https://picsum.photos/seed/iul-guarantees/800/600',
+  content: `
+## IUL Guarantees are Misleading
+
+When you open a life insurance illustration, one of the first things that catches your eye is the "Guaranteed" ledger. If you are like most consumers, seeing the word "guaranteed" makes you assume that this is the contract's projected path, or perhaps a highly probable outcome.
+
+In any other financial vehicle—whether you are investing in mutual funds, individual stocks, or purchasing a piece of real estate—regulators do not force you to look at a year-by-year "worst-case scenario" where everything falls apart. But for life insurance, showing this guaranteed ledger is a strict regulatory requirement.
+
+This creates a massive communication gap. Because of this legal mandate, consumers are handed a ledger of numbers that look incredibly poor and are led to believe: *"This is what's guaranteed to happen to my money."*
+
+In reality, the word "guaranteed" is a misnomer. It is not a projection of your policy's future; it is the absolute financial "Worst-Case Scenario."
+
+To fully understand why this is the case, we have to look at the physics of how the guaranteed ledger is calculated, what it actually takes to trigger it, and why a real-world crisis proved that this worst-case scenario is virtually impossible to hit.
+
+### The Physics of the "Perfect Storm"
+
+To explain the likelihood of your policy hitting its guaranteed minimums, imagine a game of pool. When you hit a rack of pool balls with your cue, they scatter across the table in every direction. Theoretically, according to the laws of physics, it is mathematically possible that if you hit the balls with the exact right force and angle, they will bounce off the cushions and magically realign themselves back into a perfect, intact triangle.
+
+But while it is theoretically possible, the actual probability of that happening is virtually zero.
+
+To trigger the worst-case guaranteed ledger of an Indexed Universal Life (IUL) policy, a similar "perfect storm" of devastating events must occur. Specifically, the day after you sign your policy delivery requirements and mail in your first check, two things must happen simultaneously and continue every single day for the rest of your life:
+
+1.  Mortality rates must spike immediately, and the insurance company must charge their absolute contractual maximum rates every single year.
+2.  The stock market must be completely flat or negative every single year, crediting your index strategies 0% for the rest of your life.
+
+If a prolonged, multigenerational catastrophe of this scale actually took place, every traditional financial asset in the world—from the S&P 500 to your local real estate market—would be completely decimated. If the sky is truly falling to that degree, you wouldn't sit around waiting decades for your IUL to expire. Instead, you would simply surrender your contract, cash out your accumulated values, and walk away with your money much sooner. It’s highly likely that the worst-case scenario of your IUL is far better than all the other assets you have.
+
+### "But Wait... Didn't We Just Have a Global Pandemic?"
+
+For most of my career, I would explain to clients: *"To trigger the maximum mortality charges, we would need some kind of unprecedented global pandemic that kills millions of people, disrupts global supply chains, and throws the economy into chaos."*
+
+And then, the COVID-19 pandemic actually happened.
+
+![image](/picture/COVID.png|Global Pandemic Impact|float-right)
+
+It was an incredibly disruptive global event. According to the World Health Organization (WHO), the pandemic caused tens of millions of deaths worldwide, including over 1 million unplanned, excess deaths in the United States alone. It was exactly the type of severe real-world stress test critics claimed would cause IUL policies to collapse under skyrocketing internal costs.
+
+But what did the insurance companies actually do? Under this immense financial and mortality strain, not a single major IUL company increased their internal mortality charges or dropped their caps and participation rates to the minimum guarantees on in-force policies.
+
+If a once-in-a-century global pandemic that claimed millions of lives couldn’t push insurance companies to increase their mortality charges, the event required to trigger the absolute contractual maximums would have to be something far more cataclysmic.
+
+### The Cost of Insurance (COI) Guarantee
+
+The internal insurance charges in an IUL are contractually capped by a maximum mortality table filed with state insurance departments, and even if a historic crisis forced a company to charge these maximum rates, a properly structured policy guarantees a solid baseline of cash value.
+
+**Proof**: When a life insurance company issues a policy, they cannot arbitrarily charge whatever fees they want. Every policy is contractually bound to a published Maximum Cost of Insurance (COI) table approved by the state’s Department of Insurance. These maximum charges are based on standardized mortality tables (such as the 2001 or 2017 CSO tables).
+
+![image](/picture/CSO%20tables.png|CSO Tables)
+
+For an insurance company to legally charge you these maximum rates, overall mortality rates across the country would need to permanently increase by 40% to 50% year-over-year.
+
+To see how a maximum-funded, properly structured policy protects you even during this "zombie apocalypse" scenario, let’s look at a real-world policy ledger for a 45-year-old male paying $25,000 annually into a $357,068 death benefit policy:
+
+**Under Current (Non-Guaranteed) Rates (6.00% illustrated return)**:
+*   **Year 1**: He pays $25,000. His internal charges are $5,059, leaving an ending accumulation value of $21,214.
+*   **Year 5**: After contributing a total of $125,000, his Year 5 charges are $4,117, and the accumulation value is $124,025.
+*   **Year 21**: Total contributions are $500,000, Year 21 charges are $1,146, and the accumulation value is $865,040.
+
+![image](/picture/current_scenario.png|Years 1 through 5 current mortality charges)
+
+**Under the Guaranteed (Worst-Case) Scenario (Assumes maximum charges and a 0.10% guaranteed minimum return)**:
+*   **Year 1**: He pays $25,000. Because mortality charges immediately spike to the contractual limit, his charges rise to $5,179 with an accumulation value of $19,842.
+*   **Year 5**: After contributing $125,000, his Year 5 guaranteed charges are $5,286, and the accumulation value is $99,156.
+*   **Year 21**: Total contributions are $500,000, Year 21 maximum charges are $2,871, and the worst-case scenario cash value is $383,995.
+
+![image](/picture/worst_case.png|Years 1 to 5 worst-case mortality charges and cash values)
+
+Even if a catastrophic and permanent 50% spike in national mortality occurred the day after policy issue, a properly structured, max-funded policy prevents your cash value from being wiped out. The client still maintains nearly 76% of their paid premium in guaranteed cash value while keeping a $383,995 in cash value by year 21.
+
+![image](/picture/year_21.png|Year 21 worst-case scenario)
+
+### The Interest Rate & External Market Worst Case Scenario
+
+The other Doomsday Scenario of an IUL would be if the policy only earned the contractually minimum guaranteed interest rate. These rates can range from 0% to 2% depending on the contract. The likelihood of the external indexes performing this low forever is near zero. After applying a 0% floor to the strategies, it becomes even closer to zero.
+
+This "perfect storm" needs two things to happen forever. First, the stock market must be flat or negative every single year for the rest of your life. A common indexing strategy is linked to the S&P 500 Price Index. Below is the historical performance, which has never been 0% for more than three years in a row:
+
+[chart:sp500-history]
+
+IUL utilizes an indexing strategy to eliminate this market risk. The contract contains a guaranteed 0% floor on all index allocations, meaning that even if the S&P 500 drops 20%, 30%, or 40% in a single year, your policy is credited exactly 0%.
+
+*(Please visit our [IUL Hypothetical Return Calculator](/#calculator) to run a more detailed analysis of S&P 500 Price returns AFTER a cap and floor are applied)*
+
+Furthermore, the worst-case scenario assumes that the insurance carrier lowers your caps and participation rates to their absolute minimums. For instance, a current cap of 11% could contractually be lowered to a guaranteed minimum cap of 3.00% or 2.10%.
+
+However, an insurance company would only do this if external interest rates go to zero and remain at 0% for a prolonged period of time. The insurance company uses their underlying investments, which generate an interest rate, to create the option budget used to purchase options and perform hedging that generates caps and participation rates. The only scenario where they would reduce caps to minimums is if market rates for bonds, treasuries, and alternatives were 0%. This has also never happened before.
+
+[chart:treasury-10yr]
+
+Because the contract legally binds the insurer to a 0% floor and a guaranteed minimum surrender interest rate, an IUL mathematically prevents market volatility from ever destroying your cash, serving as a secure bucket when traditional investments are failing.
+
+### Conclusion
+
+I’ll never forget explaining the “guarantees” of an IUL policy to a client who just wasn't catching on. Then, it suddenly dawned on me: they thought “guaranteed” meant the worst-case scenario was *bound* to happen.
+
+The truth? While that guaranteed ledger could happen, it almost certainly never will. It is statistically the least likely scenario to ever occur. Think of it like watching a clock spontaneously run backward—the laws of physics say it's technically possible, but the odds are so infinitesimally low it won't happen any time soon.
+
+Once you understand the two main drivers behind an IUL’s worst-case scenario—maximum mortality charges and minimum interest rates—and realize how unlikely it is for those two events to occur simultaneously, you can feel much more confident that the “guaranteed” ledger will never actually come to pass.
+`
+};
+
 EDUCATION_CONTENT.push(NEW_ARTICLE);
+EDUCATION_CONTENT.push(IUL_GUARANTEES_ARTICLE);
 
   const STORIES: SuccessStory[] = [
   { 
@@ -2100,9 +2307,10 @@ export default function App() {
                     if (match) {
                       const [, url, caption, size] = match;
                       const isSmall = size === 'small';
+                      const isFloatRight = size === 'float-right';
                       return (
-                        <figure key={i} className={`my-16 ${isSmall ? 'max-w-md mx-auto' : ''}`}>
-                          <div className="rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800">
+                        <figure key={i} className={`my-16 ${isSmall ? 'max-w-md mx-auto' : ''} ${isFloatRight ? 'md:float-right md:w-1/2 md:max-w-md md:ml-8 md:my-2' : ''}`}>
+                          <div className={`rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800`}>
                             <img src={url} alt={caption} className="w-full h-auto" referrerPolicy="no-referrer" />
                           </div>
                           <figcaption className="text-center mt-6 text-sm text-slate-500 italic font-medium">
