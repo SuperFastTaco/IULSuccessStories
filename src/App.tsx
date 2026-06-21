@@ -1103,7 +1103,7 @@ const IUL_GUARANTEES_ARTICLE: EducationItem = {
   type: 'article',
   duration: '10 min read',
   category: 'Misconceptions',
-  image: 'https://picsum.photos/seed/iul-guarantees/800/600',
+  image: '/picture/misconception.png',
   content: `
 ## IUL Guarantees are Misleading
 
