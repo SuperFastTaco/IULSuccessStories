@@ -1204,8 +1204,72 @@ Once you understand the two main drivers behind an IUL’s worst-case scenario�
 `
 };
 
+const AVERAGE_RETURN_ARTICLE: LibraryItem = {
+  id: 14,
+  title: "Illustrating an IUL at an Average Return Isn't Good Enough",
+  description: "When financial planners or life insurance agents illustrate a retirement plan using an 'average' rate of return, they are doing their clients a massive disservice.",
+  type: 'article',
+  duration: '8 min read',
+  category: 'Misconceptions',
+  image: '/picture/image2.png',
+  content: `
+## Illustrating an IUL at an Average Return Isn't Good Enough
+
+When financial planners or life insurance agents illustrate a retirement plan or an Indexed Universal Life (IUL), or a Fixed Indexed Annuity (FIA) policy using an "average" rate of return, they are doing their clients a massive disservice.
+
+Mathematically, an average return means that the projected results only have a 50% chance of coming true. Why is a 50% probability somehow become an acceptable industry standard of success? We sit across a client saying we believe they should implement a plan that will fail half the time?  
+
+Imagine boarding an airplane, and right before takeoff, the pilot comes over the intercom to announce, *"Welcome aboard. You have exactly a 50% chance of actually making it to your destination. Don’t worry, we make it most of the way there though."* Every single passenger would immediately get off that flight. Yet, for some reason, the financial industry has accepted a 50/50 coin flip as the standard benchmark for illustrating your life savings and retirement income.
+
+Your financial future deserves a higher standard.
+
+![image](/picture/image2.png|Historical Return Summary)
+
+*This infographic, titled "Historical Return Summary," showcases selected 20-year rolling-period results, highlighting a 9.66% maximum return and a 7.82% average return.*
+
+### The Flaw in the "Average" Methodology 
+
+Why are illustrations built this way? It comes down to how insurance companies and regulators determine default illustration rates.
+
+Insurance carriers set their maximum illustrated rates based on actuarial guidelines, such as AG 49-A, which are established by regulatory boards of actuaries. These guidelines dictate the allowable average return by looking at a rigid, specific time period—such as an average annual look-back of 25-year periods over the most recent 65 calendar years—and frequently focus heavily on a single reference index, like the S&P 500.
+
+But that just determines the average and it still means the policy will underperform 50% of the time over those periods. Relying on a single, static actuarial snapshot to dictate the default "average" rate of return creates a narrow and flawed projection of what your money will actually do in the real world.
+
+![image](/picture/image1.png|Why the Average Is Not Enough)
+
+*This infographic, titled "Why the Average Is Not Enough," presents a bell-curve distribution of 9,688 complete 20-year rolling periods, illustrating how outcomes vary around the 7.82% average.*
+
+### The Solution: High-Confidence Backtesting 
+
+Clients deserve something much better than a 50% probability, but the problem has always been that the industry lacked a reliable method to determine a back-tested rate of return that offered a genuinely high degree of confidence.
+
+That is exactly why we developed the **IUL Performance Backtester** (our hypothetical back-testing calculator).
+
+Instead of relying on a single arbitrary start date, this calculator stress-tests IUL scenarios across thousands of different rolling time periods—analyzing every single trading day over decades of historical market data. By running thousands of periods across multiple indexes, the tool doesn't just tell us what the basic "average" rate of return is. Instead, it drills down into the data to calculate the exact rate of return that historically came true **80% of the time, 90% of the time, or even 100% of the time**.
+
+![image](/picture/image3.png|Historical Crediting Snapshot)
+
+*This infographic, titled "Historical Crediting Snapshot," shows the probability of reaching specific annual return benchmarks: 80% at 7.34%, 90% at 7.14%, and 100% at 6.10%.*
+
+For example, the calculator allows us to calculate probabilities higher than a 50%, which result in the following:
+
+- **The Typical Scenario:** The annual return that was achieved or exceeded in 80% of the historical periods is **7.34%**.
+- **The Conservative Scenario:** The annual return that was achieved or exceeded in 90% of the historical periods is **7.14%**.
+- **The Worst-Case Scenario:** The baseline return that was achieved 100% of the time across all tested historical periods is **6.10%**.
+
+### Building With Confidence 
+
+If we want an IUL policy to perform exactly as expected over twenty, thirty, or forty years, we have to stop showing clients averages. By shifting our focus away from the insurance company's default average and instead illustrating an IUL policy using one of these high-probability benchmarks, we position the policy to under-promise and over-deliver.  
+
+You can still sell a policy if you illustrate at a **6.14%**. You can also use a show a client a calculated result and make them feel more confident in their plan.
+
+**When you purchase a properly structured Indexed Universal Life policy today, you should not have to gamble.** By utilizing rigorous back-tested data to set your expectations, you have the ability to feel completely comfortable and confident that the illustration you are looking at has a much higher degree of coming true than just a simple coin flip.
+`
+};
+
 EDUCATION_CONTENT.push(NEW_ARTICLE);
 EDUCATION_CONTENT.push(IUL_GUARANTEES_ARTICLE);
+EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
 
   const STORIES: SuccessStory[] = [
   { 
