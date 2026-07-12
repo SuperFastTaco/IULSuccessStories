@@ -1835,7 +1835,9 @@ export default function App() {
     initClientPixel();
   }, []);
 
-  // URL Deep Linking logic
+  const isPopStateRef = useRef(false);
+
+  // URL Deep Linking & PopState logic
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const navParam = params.get('nav');
@@ -1845,8 +1847,27 @@ export default function App() {
     if (navParam) setActiveNav(navParam);
     if (storyParam) setSelectedStoryId(parseInt(storyParam));
     if (educationParam) setSelectedEducationId(parseInt(educationParam));
+
+    // Listen to browser back/forward buttons
+    const handlePopState = () => {
+      isPopStateRef.current = true;
+      const currentParams = new URLSearchParams(window.location.search);
+      const currentNav = currentParams.get('nav') || "Home";
+      const currentStory = currentParams.get('story');
+      const currentEducation = currentParams.get('education');
+
+      setActiveNav(currentNav);
+      setSelectedStoryId(currentStory ? parseInt(currentStory) : null);
+      setSelectedEducationId(currentEducation ? parseInt(currentEducation) : null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
+  // Update URL history when navigation state changes
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeNav !== "Home") params.set('nav', activeNav);
@@ -1855,7 +1876,15 @@ export default function App() {
     
     const searchString = params.toString();
     const newUrl = `${window.location.pathname}${searchString ? '?' + searchString : ''}`;
-    window.history.replaceState({}, '', newUrl);
+    
+    const currentSearch = window.location.search;
+    const isSameUrl = currentSearch === (searchString ? '?' + searchString : '');
+
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+    } else if (!isSameUrl) {
+      window.history.pushState({}, '', newUrl);
+    }
   }, [activeNav, selectedStoryId, selectedEducationId]);
 
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
