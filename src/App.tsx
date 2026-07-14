@@ -1243,7 +1243,7 @@ That is exactly why we developed the [IUL Performance Backtester](nav:Calculator
 
 Instead of relying on a single arbitrary start date, this calculator stress-tests IUL scenarios across thousands of different rolling time periods—analyzing every single trading day over decades of historical market data. By running thousands of periods across multiple indexes, the tool doesn't just tell us what the basic "average" rate of return is. Instead, it drills down into the data to calculate the exact rate of return that historically came true **80% of the time, 90% of the time, or even 100% of the time**.
 
-![image](/picture/image3.png|This infographic, titled "Historical Crediting Snapshot," shows the probability of reaching specific annual return benchmarks: 80% at 7.34%, 90% at 7.14%, and 100% at 6.10%.)
+![image](/animation/historical-crediting-animation.mp4|This infographic, titled "Historical Crediting Snapshot," shows the probability of reaching specific annual return benchmarks: 80% at 7.34%, 90% at 7.14%, and 100% at 6.10%.)
 
 For example, the calculator allows us to calculate probabilities higher than a 50%, which result in the following:
 
@@ -1761,6 +1761,48 @@ const getFbc = () => {
     }
   }
   return fbc;
+};
+
+const ScrollVideoPlayer = ({ src, alt }: { src: string; alt: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(video);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      className="w-full h-auto block"
+      muted
+      playsInline
+      loop
+      preload="metadata"
+      aria-label={alt}
+    >
+      <source src={src} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  );
 };
 
 export default function App() {
@@ -2428,10 +2470,15 @@ export default function App() {
                       const [, url, caption, size] = match;
                       const isSmall = size === 'small';
                       const isFloatRight = size === 'float-right';
+                      const isVideo = url.endsWith('.mp4');
                       return (
                         <figure key={i} className={`my-16 ${isSmall ? 'max-w-md mx-auto' : ''} ${isFloatRight ? 'md:float-right md:w-1/2 md:max-w-md md:ml-8 md:my-2' : ''}`}>
                           <div className={`rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800`}>
-                            <img src={url} alt={caption} className="w-full h-auto" referrerPolicy="no-referrer" />
+                            {isVideo ? (
+                              <ScrollVideoPlayer src={url} alt={caption} />
+                            ) : (
+                              <img src={url} alt={caption} className="w-full h-auto" referrerPolicy="no-referrer" />
+                            )}
                           </div>
                           <figcaption className="text-center mt-6 text-sm text-slate-500 italic font-medium">
                             {caption}

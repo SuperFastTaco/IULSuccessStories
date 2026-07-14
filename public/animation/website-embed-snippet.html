@@ -1,0 +1,42 @@
+<!-- Upload the MP4 and poster beside this page, then adjust the paths if needed. -->
+<video
+  class="scroll-animation"
+  muted
+  playsinline
+  loop
+  preload="metadata"
+  poster="historical-crediting-poster.jpg"
+  aria-label="Animated historical crediting infographic"
+>
+  <source src="historical-crediting-animation.mp4" type="video/mp4">
+  <img
+    src="historical-crediting-animation.gif"
+    alt="Animated historical crediting infographic"
+  >
+</video>
+
+<style>
+  .scroll-animation {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+
+<script>
+  const scrollAnimations = document.querySelectorAll(".scroll-animation");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+
+      if (entry.isIntersecting) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, { threshold: 0.35 });
+
+  scrollAnimations.forEach((video) => observer.observe(video));
+</script>
