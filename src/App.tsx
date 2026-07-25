@@ -32,8 +32,11 @@ import {
   Terminal,
   AlertCircle,
   Trash2,
-  Play
+  Play,
+  Database,
+  RefreshCw
 } from 'lucide-react';
+import { initAuth, googleSignIn, logout, fetchSpreadsheetValues } from './utils/firebaseAuth';
 import { motion, AnimatePresence } from 'motion/react';
 import RothConversionCalculator from './components/RothConversionCalculator';
 import { 
@@ -1103,7 +1106,7 @@ const IUL_GUARANTEES_ARTICLE: EducationItem = {
   type: 'article',
   duration: '10 min read',
   category: 'Misconceptions',
-  image: '/picture/misconception.png',
+  image: '/picture/1782708948709.jpeg',
   content: `
 ## IUL Guarantees are Misleading
 
@@ -1204,7 +1207,7 @@ Once you understand the two main drivers behind an IULâ€™s worst-case scenarioâ€
 `
 };
 
-const AVERAGE_RETURN_ARTICLE: LibraryItem = {
+const AVERAGE_RETURN_ARTICLE: EducationItem = {
   id: 14,
   title: "Illustrating an IUL at an Average Return Isn't Good Enough",
   description: "When financial planners or life insurance agents illustrate a retirement plan using an 'average' rate of return, they are doing their clients a massive disservice.",
@@ -1568,16 +1571,16 @@ EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
     id: 7, 
     title: "$8.9M Premium Policy Performance", 
     age: 53, 
-    policyYears: 9, 
-    return: "7.38%", 
-    category: "Growth",
+    policyYears: 10, 
+    return: "9.00%", 
+    category: "Stability",
     details: {
       totalPremium: "$8,925,383",
-      indexRate: "7.38%",
-      interestCredited: "$710,684",
-      accumulationValue: "$10,276,988",
+      indexRate: "9.00%",
+      interestCredited: "$918,379",
+      accumulationValue: "$11,060,647",
       deathBenefit: "$17,813,619",
-      costOfInsurance: "$136,490"
+      costOfInsurance: "$55,701"
     },
     actualLedger: [
       { year: 2017, premium: "1,275,054", rate: "11.68%", accum: "1,135,087", deathBenefit: "17,813,619" },
@@ -1589,6 +1592,7 @@ EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
       { year: 2023, premium: "1,275,055", rate: "8.75%", accum: "9,058,615", deathBenefit: "17,813,619" },
       { year: 2024, premium: "0", rate: "8.75%", accum: "9,702,795", deathBenefit: "17,813,619" },
       { year: 2025, premium: "0", rate: "7.38%", accum: "10,276,988", deathBenefit: "17,813,619" },
+      { year: 2026, premium: "0", rate: "9.00%", accum: "11,060,647", deathBenefit: "17,813,619" },
     ],
     illustratedLedger: [
       { year: 1, premium: "1,275,055", rate: "6.90%", accum: "1,081,113", deathBenefit: "17,813,619" },
@@ -1600,10 +1604,11 @@ EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
       { year: 7, premium: "1,275,055", rate: "6.90%", accum: "9,476,945", deathBenefit: "18,480,043" },
       { year: 8, premium: "0", rate: "6.90%", accum: "9,972,208", deathBenefit: "18,947,195" },
       { year: 9, premium: "0", rate: "6.90%", accum: "10,502,349", deathBenefit: "19,429,345" },
+      { year: 10, premium: "0", rate: "6.90%", accum: "11,067,025", deathBenefit: "19,931,495" },
     ],
-    actualTotals: { premium: "8,925,383", rate: "6.71%" },
+    actualTotals: { premium: "8,925,383", rate: "6.94%" },
     illustratedTotals: { premium: "8,925,385", rate: "6.90%" },
-    finalAnalysis: "This 9-year-old policy demonstrates the power of high-premium funding in a growth-oriented IUL strategy. With nearly $9 million in total premiums paid over the first 7 years, the policy has reached an accumulation value of over $10.2 million. Despite a 0% credit in 2022, the policy's average performance remains strong, tracking closely with the original illustration and providing a substantial death benefit of over $17.8 million."
+    finalAnalysis: "This 10-year-old policy demonstrates the power of high-premium funding in a growth-oriented IUL strategy. With nearly $9 million in total premiums paid over the first 7 years, the policy has reached an accumulation value of over $11 million. Despite a 0% credit in 2022, the policy's average performance remains strong, tracking closely with the original illustration and providing a substantial death benefit of over $17.8 million."
   },
   { 
     id: 8, 
@@ -1819,9 +1824,40 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  const [googleUser, setGoogleUser] = useState<any>(null);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [syncedCard7Data, setSyncedCard7Data] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = initAuth(
+      (user, token) => {
+        setGoogleUser(user);
+        setGoogleToken(token);
+      },
+      () => {
+        setGoogleUser(null);
+        setGoogleToken(null);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const storiesWithSync = useMemo(() => {
+    if (!syncedCard7Data) return STORIES;
+    return STORIES.map(story => {
+      if (story.id === 7) {
+        return {
+          ...story,
+          ...syncedCard7Data
+        };
+      }
+      return story;
+    });
+  }, [syncedCard7Data]);
+
   const categories = ["All", "Growth", "Stability", "Safety", "Underperform"];
 
-  const filteredStories = STORIES.filter(story => 
+  const filteredStories = storiesWithSync.filter(story => 
     (activeCategory === "All" || story.category === activeCategory) &&
     story.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -1981,7 +2017,7 @@ export default function App() {
 
   useEffect(() => {
     if (selectedStoryId !== null) {
-      const story = STORIES.find(s => s.id === selectedStoryId);
+      const story = storiesWithSync.find(s => s.id === selectedStoryId);
       if (story) {
         trackMetaEvent('ViewContent', {
           contentName: story.title,
@@ -2634,6 +2670,51 @@ export default function App() {
       window.scrollTo(0, 0);
     }, []);
 
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    const handleLogin = async () => {
+      try {
+        setSyncMessage(null);
+        const result = await googleSignIn();
+        if (result) {
+          setGoogleUser(result.user);
+          setGoogleToken(result.accessToken);
+          setSyncMessage({ type: 'success', text: "Successfully connected to Google Drive. Click 'Sync Spreadsheet' to fetch the latest values." });
+        }
+      } catch (err: any) {
+        setSyncMessage({ type: 'error', text: `Authentication failed: ${err.message || err}` });
+      }
+    };
+
+    const handleLogout = async () => {
+      try {
+        await logout();
+        setGoogleUser(null);
+        setGoogleToken(null);
+        setSyncMessage(null);
+      } catch (err: any) {
+        console.error("Sign out failed:", err);
+      }
+    };
+
+    const handleSyncSpreadsheet = async () => {
+      if (!googleToken) return;
+      setIsSyncing(true);
+      setSyncMessage(null);
+      try {
+        const spreadsheetId = "1NonnSuEzBlB5oWTNj3-u7ExHzVfLy5yIITFJX17ttL8";
+        const freshData = await fetchSpreadsheetValues(spreadsheetId, googleToken);
+        setSyncedCard7Data(freshData);
+        setSyncMessage({ type: 'success', text: "Successfully synchronized Card #7 with the tracking spreadsheet!" });
+      } catch (err: any) {
+        console.error("Spreadsheet sync failed:", err);
+        setSyncMessage({ type: 'error', text: `Sync failed: ${err.message || err}` });
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
     const navItems = [
       { id: 'summary', label: 'Performance Summary' },
       { id: 'comparison', label: 'Illustration Comparison' },
@@ -2689,6 +2770,8 @@ export default function App() {
                 </span>
               </div>
             </div>
+
+
 
             {story.details && (
               <div id="summary" className="mb-12 scroll-mt-32">
@@ -3304,7 +3387,7 @@ export default function App() {
             onScroll={checkScroll}
             className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-4 px-4"
           >
-            {STORIES.map((story) => (
+            {storiesWithSync.map((story) => (
               <div 
                 key={story.id}
                 onClick={() => {
@@ -4545,7 +4628,7 @@ export default function App() {
 
       <main className="flex-grow">
         {selectedStoryId ? (
-          <CaseStudyPage story={STORIES.find(s => s.id === selectedStoryId)!} />
+          <CaseStudyPage story={storiesWithSync.find(s => s.id === selectedStoryId)!} />
         ) : activeNav === "Home" ? (
           <>
             {/* Hero Section */}

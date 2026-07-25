@@ -1,5 +1,6 @@
 {
   "name": "IUL Success Stories",
   "description": "A comprehensive showcase for Indexed Universal Life (IUL) success stories, featuring interactive calculators, educational articles, and a polished modern design.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
