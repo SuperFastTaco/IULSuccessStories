@@ -33,6 +33,12 @@ import {
   AlertCircle,
   Trash2,
   Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  RotateCcw,
+  RotateCw,
+  Headphones,
   Database,
   RefreshCw
 } from 'lucide-react';
@@ -641,6 +647,7 @@ interface EducationItem {
   image: string;
   content: string;
   videoUrl?: string;
+  audioUrl?: string;
 }
 
 const EDUCATION_CONTENT: EducationItem[] = [
@@ -652,6 +659,7 @@ const EDUCATION_CONTENT: EducationItem[] = [
     duration: '10 min read',
     category: 'Basics',
     image: 'https://picsum.photos/seed/evolution-tech/800/600',
+    audioUrl: '/audio/the-evolution-of-indexed-universal-life-kevin-nuber.mp3',
     content: `
 ## The Evolution of Indexed Universal Life - From Term Insurance to IUL
 
@@ -2236,6 +2244,221 @@ export default function App() {
     );
   };
 
+  interface ArticleAudioPlayerProps {
+    audioUrl?: string;
+    title: string;
+    duration?: string;
+  }
+
+  const ArticleAudioPlayer: React.FC<ArticleAudioPlayerProps> = ({ audioUrl, title, duration }) => {
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [audioDuration, setAudioDuration] = useState(0);
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const [hasError, setHasError] = useState(false);
+
+    const primaryAudioPath = audioUrl || '/audio/article.mp3';
+
+    useEffect(() => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const updateTime = () => setCurrentTime(audio.currentTime);
+      const updateDuration = () => {
+        if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+          setAudioDuration(audio.duration);
+          setHasError(false);
+        }
+      };
+      const handleEnded = () => setIsPlaying(false);
+      const handleError = () => {
+        setHasError(true);
+        setIsPlaying(false);
+      };
+
+      audio.addEventListener('timeupdate', updateTime);
+      audio.addEventListener('loadedmetadata', updateDuration);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError);
+
+      return () => {
+        audio.removeEventListener('timeupdate', updateTime);
+        audio.removeEventListener('loadedmetadata', updateDuration);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
+      };
+    }, [primaryAudioPath]);
+
+    const togglePlay = () => {
+      if (!audioRef.current) return;
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+          setHasError(false);
+        }).catch((err) => {
+          console.warn("Audio play error:", err);
+          setHasError(true);
+        });
+      }
+    };
+
+    const skipTime = (seconds: number) => {
+      if (!audioRef.current) return;
+      const newTime = Math.max(0, Math.min(audioRef.current.currentTime + seconds, audioDuration || 999999));
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    };
+
+    const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newTime = parseFloat(e.target.value);
+      setCurrentTime(newTime);
+      if (audioRef.current) {
+        audioRef.current.currentTime = newTime;
+      }
+    };
+
+    const changePlaybackRate = () => {
+      const rates = [1, 1.25, 1.5, 2];
+      const nextIndex = (rates.indexOf(playbackRate) + 1) % rates.length;
+      const newRate = rates[nextIndex];
+      setPlaybackRate(newRate);
+      if (audioRef.current) {
+        audioRef.current.playbackRate = newRate;
+      }
+    };
+
+    const toggleMute = () => {
+      if (audioRef.current) {
+        audioRef.current.muted = !isMuted;
+        setIsMuted(!isMuted);
+      }
+    };
+
+    const formatTime = (secs: number) => {
+      if (isNaN(secs) || !isFinite(secs) || secs < 0) return '0:00';
+      const minutes = Math.floor(secs / 60);
+      const seconds = Math.floor(secs % 60);
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
+    return (
+      <div className="w-full my-6 p-5 md:p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/60 rounded-2xl md:rounded-3xl shadow-xl text-white relative overflow-hidden group text-left">
+        <audio ref={audioRef} src={primaryAudioPath} preload="metadata" />
+        
+        {/* Background Subtle Glow */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col gap-4 relative z-10">
+          {/* Header Label */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-primary">
+              <span className="p-1.5 rounded-lg bg-primary/20 text-primary border border-primary/30 flex items-center justify-center">
+                <Headphones size={15} />
+              </span>
+              <span>Listen to Article</span>
+              {isPlaying && (
+                <span className="flex items-end gap-0.5 ml-2 h-4">
+                  <span className="w-1 bg-primary rounded-full animate-[bounce_1s_infinite_100ms] h-2" />
+                  <span className="w-1 bg-primary rounded-full animate-[bounce_1s_infinite_300ms] h-4" />
+                  <span className="w-1 bg-primary rounded-full animate-[bounce_1s_infinite_200ms] h-3" />
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+              <Clock size={13} className="text-slate-500" />
+              <span>{duration || "Audio Transcript"}</span>
+            </div>
+          </div>
+
+          {/* Audio Player Controls & Progress Slider */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            {/* Main Playback Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => skipTime(-10)}
+                title="Rewind 10 seconds"
+                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+              >
+                <RotateCcw size={18} />
+              </button>
+
+              <button
+                onClick={togglePlay}
+                className="w-12 h-12 rounded-full bg-primary hover:bg-primary-dark text-white flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                title={isPlaying ? "Pause audio" : "Play audio transcript"}
+              >
+                {isPlaying ? <Pause size={22} className="fill-current" /> : <Play size={22} className="fill-current ml-0.5" />}
+              </button>
+
+              <button
+                onClick={() => skipTime(10)}
+                title="Forward 10 seconds"
+                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+              >
+                <RotateCw size={18} />
+              </button>
+            </div>
+
+            {/* Progress bar + time display */}
+            <div className="flex-grow flex items-center gap-3">
+              <span className="text-xs font-mono text-slate-300 w-10 text-right shrink-0">
+                {formatTime(currentTime)}
+              </span>
+
+              <div className="flex-grow relative flex items-center">
+                <input
+                  type="range"
+                  min={0}
+                  max={audioDuration || 100}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full h-2 bg-slate-700/80 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-light transition-all"
+                />
+              </div>
+
+              <span className="text-xs font-mono text-slate-400 w-10 shrink-0">
+                {formatTime(audioDuration)}
+              </span>
+            </div>
+
+            {/* Speed & Volume */}
+            <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+              <button
+                onClick={changePlaybackRate}
+                className="px-2.5 py-1 text-xs font-bold bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg transition-all cursor-pointer border border-white/10"
+                title="Change Playback Speed"
+              >
+                {playbackRate}x
+              </button>
+
+              <button
+                onClick={toggleMute}
+                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+                title={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {hasError && (
+            <div className="text-xs text-amber-300/90 bg-amber-950/40 border border-amber-800/50 p-3 rounded-xl mt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-bold text-amber-200">Ready for your MP3 audio file: </span>
+                Place your audio file in <code className="bg-black/40 px-1.5 py-0.5 rounded text-amber-200 font-mono">/public/audio/article.mp3</code> (or <code className="bg-black/40 px-1.5 py-0.5 rounded text-amber-200 font-mono">public/{primaryAudioPath.replace(/^\//, '')}</code>)
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const EducationPage = () => {
     useEffect(() => {
       window.scrollTo(0, 0);
@@ -2459,6 +2682,17 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* Listen to Article Audio Player (NYT Style) */}
+                {selectedItem.type === 'article' && selectedItem.audioUrl && (
+                  <div className="mt-8">
+                    <ArticleAudioPlayer 
+                      audioUrl={selectedItem.audioUrl} 
+                      title={selectedItem.title} 
+                      duration={selectedItem.duration} 
+                    />
+                  </div>
+                )}
               </motion.div>
             </div>
           </section>
