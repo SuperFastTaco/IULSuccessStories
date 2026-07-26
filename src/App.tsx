@@ -745,6 +745,7 @@ We don't drive 1990s minivans on road trips anymore, and we shouldn't rely on ou
     duration: '12 min read',
     category: 'Strategy',
     image: 'https://picsum.photos/seed/financial-fortress/800/600',
+    audioUrl: '/audio/why-iul-the-ultimate-financial-fortress-kevin-nuber.mp3',
     content: `
 ## Why IUL? - The Ultimate Financial Fortress
 
