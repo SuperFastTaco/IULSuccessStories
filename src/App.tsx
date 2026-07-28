@@ -814,6 +814,7 @@ No single product available today can solve these three risks: **Mortality, Tax 
     duration: '15 min read',
     category: 'Advanced',
     image: 'https://picsum.photos/seed/max-funded/800/600',
+    audioUrl: '/audio/what-is-a-maximum-funded-iul-kevin-nuber-chunked-normalized.m4a',
     content: `
 ## What is a Maximum Funded IUL?
 
@@ -1224,6 +1225,7 @@ const AVERAGE_RETURN_ARTICLE: EducationItem = {
   duration: '8 min read',
   category: 'Misconceptions',
   image: '/picture/image2.png',
+  audioUrl: '/audio/illustrating-an-iul-at-an-average-return-isnt-good-enough-kevin-nuber.mp3',
   content: `
 ## Illustrating an IUL at an Average Return Isn't Good Enough
 
