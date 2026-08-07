@@ -1615,7 +1615,7 @@ EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
       { year: 7, premium: "1,275,055", rate: "6.90%", accum: "9,476,945", deathBenefit: "18,480,043" },
       { year: 8, premium: "0", rate: "6.90%", accum: "9,972,208", deathBenefit: "18,947,195" },
       { year: 9, premium: "0", rate: "6.90%", accum: "10,502,349", deathBenefit: "19,429,345" },
-      { year: 10, premium: "0", rate: "6.90%", accum: "11,067,025", deathBenefit: "19,931,495" },
+      { year: 10, premium: "0", rate: "6.90%", accum: "11,070,346", deathBenefit: "19,931,495" },
     ],
     actualTotals: { premium: "8,925,383", rate: "6.94%" },
     illustratedTotals: { premium: "8,925,385", rate: "6.90%" },
