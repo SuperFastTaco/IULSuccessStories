@@ -45,6 +45,7 @@ import {
 import { initAuth, googleSignIn, logout, fetchSpreadsheetValues } from './utils/firebaseAuth';
 import { motion, AnimatePresence } from 'motion/react';
 import RothConversionCalculator from './components/RothConversionCalculator';
+import ErrorBoundary from './components/ErrorBoundary';
 import { 
   LineChart, 
   Line, 
@@ -60,6 +61,10 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
+
+// Keep the large historical dataset in memory while users move between pages.
+let cachedIndexPayload: any = null;
+let cachedIndexSeriesMaps: Map<string, Map<string, number>> | null = null;
 
 const CopyLinkButton = ({ nav, storyId, educationId, className, iconOnly = false }: { nav?: string, storyId?: number, educationId?: number, className?: string, iconOnly?: boolean }) => {
   const [copied, setCopied] = useState(false);
@@ -1282,7 +1287,7 @@ const HEDGING_ARTICLE: EducationItem = {
   type: 'article',
   duration: '10 min read',
   category: 'Advanced',
-  image: 'https://picsum.photos/seed/iul-hedging/800/600',
+  image: '/picture/maxresdefault (1).webp',
   videoUrl: 'https://www.youtube.com/embed/8tuBc6dCJJg',
   content: `
 ## The Mechanics of IUL Hedging
@@ -1322,6 +1327,8 @@ This is how the **0% floor** is guaranteed. The stock market could drop by 40%, 
 
 If $950 went to secure your principal, what happens to the remaining **$50**?
 
+![image](/picture/Option Budget.svg|Option Budget: Institutional Options Call Spread Allocation)
+
 This $50 is the insurance company’s **option budget**. Rather than speculating or taking a directional bet on the market, the insurance carrier uses this budget to engage in a process called **replicative hedging**. They do this by purchasing derivative contracts—specifically, options—from major institutional investment banks. Some insurance companies do the hedging internally, eliminating the investment bank.
 
 Because the insurance company is writing a contract that promises to pay the client a return equal to the index's growth (up to a cap), the carrier has created an equity liability on its balance sheet. To offload this risk, they purchase an options package that perfectly mirrors that liability.
@@ -1343,17 +1350,23 @@ Once the hedge is in place, the mathematical payouts align perfectly under every
 
 ### Scenario A: The Market Plummets (e.g., S&P 500 drops 30%)
 
+![image](/picture/Scenario A.png|Scenario A: Down Market Protection (0% Floor))
+
 - **The Options:** Because the S&P 500 finished below the starting strike price, the call options expire completely worthless. The $50 option budget is lost.
 - **The Bonds:** The $950 general portfolio matures, earning its interest, and grows back to exactly $1,000.
 - **The Result:** The client is credited **0%**. The principal is intact, and "Zero becomes the Hero".
 
 ### Scenario B: Moderate Market Growth (e.g., S&P 500 rises 8%)
 
+![image](/picture/Scenario B.png|Scenario B: Moderate Growth Participation (8% Credit))
+
 - **The Options:** The S&P 500 grew by 8%. The institutional investment bank pays the insurance company an 8% return on the option contract.
 - **The Bonds:** The general portfolio matures to $1,000.
 - **The Result:** The insurance company passes the 8% option payout directly to the client's cash value. The client's account is credited **8%**.
 
 ### Scenario C: A Bull Market Run (e.g., S&P 500 shoots up 25%)
+
+![image](/picture/Scenario C.png|Scenario C: Bull Market Cap Participation (12% Cap))
 
 - **The Options:** The index grew past the 12% cap. The carrier's purchased 0% option pays out the full 25%. However, because the carrier *sold* an option at the 12% strike, they owe the investment bank 13% (25% minus 12%).
 - **The Math:** 25% (received) minus 13% (owed) = a net payoff of exactly **12%**.
@@ -2093,8 +2106,19 @@ export default function App() {
     }
   }, [activeNav, selectedStoryId, selectedEducationId]);
 
+  const lastTrackedEventRef = useRef<Map<string, number>>(new Map());
+
   const trackMetaEvent = async (eventName: string, params: any = {}) => {
     try {
+      // Deduplicate and throttle high-frequency events within 1.5 seconds
+      const eventKey = `${eventName}:${params.contentName || ''}:${params.contentCategory || ''}`;
+      const now = Date.now();
+      const lastTime = lastTrackedEventRef.current.get(eventKey) || 0;
+      if (now - lastTime < 1500) {
+        return; // Throttled duplicate event
+      }
+      lastTrackedEventRef.current.set(eventKey, now);
+
       const eventId = 'evt_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
 
       // Send to GTM (Google Tag Manager) DataLayer if GTM is injected
@@ -2134,13 +2158,21 @@ export default function App() {
         ...params
       };
 
-      await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyPayload),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      try {
+        await fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (error) {
-      console.error('Meta tracking error:', error);
+      console.warn('Meta tracking non-critical error:', error);
     }
   };
 
@@ -2885,17 +2917,33 @@ export default function App() {
                     // Custom image syntax: ![image](url|caption|size)
                     const match = paragraph.match(/\!\[image\]\((.*?)\|(.*?)(?:\|(.*?))?\)/);
                     if (match) {
-                      const [, url, caption, size] = match;
+                      const [, rawUrl, caption, size] = match;
+                      const url = rawUrl.trim();
                       const isSmall = size === 'small';
                       const isFloatRight = size === 'float-right';
                       const isVideo = url.endsWith('.mp4');
                       return (
                         <figure key={i} className={`my-16 ${isSmall ? 'max-w-md mx-auto' : ''} ${isFloatRight ? 'md:float-right md:w-1/2 md:max-w-md md:ml-8 md:my-2' : ''}`}>
-                          <div className={`rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800`}>
+                          <div className={`rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900`}>
                             {isVideo ? (
                               <ScrollVideoPlayer src={url} alt={caption} />
                             ) : (
-                              <img src={url} alt={caption} className="w-full h-auto" referrerPolicy="no-referrer" />
+                              <img
+                                src={url}
+                                alt={caption}
+                                className="w-full h-auto"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (!target.dataset.triedEncoded && url.includes(' ')) {
+                                    target.dataset.triedEncoded = 'true';
+                                    target.src = encodeURI(url);
+                                  } else if (!target.dataset.triedTypo && url.includes('Scenario B')) {
+                                    target.dataset.triedTypo = 'true';
+                                    target.src = url.replace('Scenario B', 'Secnario B');
+                                  }
+                                }}
+                              />
                             )}
                           </div>
                           <figcaption className="text-center mt-6 text-sm text-slate-500 italic font-medium">
@@ -3841,9 +3889,9 @@ export default function App() {
 
   const CalculatorPage = () => {
     const [activeCalcTab, setActiveCalcTab] = useState<"iul" | "roth">("iul");
-    const [payload, setPayload] = useState<any>(null);
-    const [seriesMaps, setSeriesMaps] = useState<Map<string, Map<string, number>> | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [payload, setPayload] = useState<any>(cachedIndexPayload);
+    const [seriesMaps, setSeriesMaps] = useState<Map<string, Map<string, number>> | null>(cachedIndexSeriesMaps);
+    const [isLoading, setIsLoading] = useState<boolean>(!cachedIndexPayload);
     const [error, setError] = useState<string | null>(null);
 
     // Selected state options
@@ -3879,16 +3927,26 @@ export default function App() {
       ].join("-");
     };
 
-    // Fast loading and map builder for O(1) lookups
+    // Fast loading and map builder with in-memory caching
     useEffect(() => {
+      if (cachedIndexPayload && cachedIndexSeriesMaps) {
+        setPayload(cachedIndexPayload);
+        setSeriesMaps(cachedIndexSeriesMaps);
+        setIsLoading(false);
+        return;
+      }
+
+      const controller = new AbortController();
       setIsLoading(true);
       setError(null);
-      fetch('/calculator/index-series.json')
+
+      fetch('/calculator/index-series.json', { signal: controller.signal })
         .then((res) => {
           if (!res.ok) throw new Error("Failed to load historical index series database.");
           return res.json();
         })
         .then((data: any) => {
+          cachedIndexPayload = data;
           setPayload(data);
           
           const maps = new Map<string, Map<string, number>>();
@@ -3897,6 +3955,7 @@ export default function App() {
             const dateMap = new Map<string, number>(rowList);
             maps.set(name, dateMap);
           });
+          cachedIndexSeriesMaps = maps;
           setSeriesMaps(maps);
           setIsLoading(false);
           
@@ -3905,10 +3964,15 @@ export default function App() {
           }
         })
         .catch((err) => {
+          if (err.name === "AbortError") return;
           console.error(err);
           setError(err.message || "Failed to load index series.");
           setIsLoading(false);
         });
+
+      return () => {
+        controller.abort();
+      };
     }, []);
 
     // Get metadata of current selection
@@ -3921,10 +3985,10 @@ export default function App() {
 
     // Automatically adjust rolling years if selection changes and exceeds limit
     useEffect(() => {
-      if (rollingYears > maxYearsForIndex) {
+      if (maxYearsForIndex && rollingYears > maxYearsForIndex) {
         setRollingYears(maxYearsForIndex);
       }
-    }, [selectedIndexName, maxYearsForIndex, rollingYears]);
+    }, [selectedIndexName, maxYearsForIndex]);
 
     // Live calculations calculated in real-time
     const results = useMemo(() => {
@@ -4145,7 +4209,12 @@ export default function App() {
           </div>
 
           {activeCalcTab === "roth" ? (
-            <RothConversionCalculator />
+            <ErrorBoundary
+              fallbackTitle="Roth Calculator Error"
+              fallbackMessage="An error occurred while calculating the Roth conversion scenario. Please try resetting or refreshing."
+            >
+              <RothConversionCalculator />
+            </ErrorBoundary>
           ) : (
             <>
               {/* Header */}
@@ -5010,7 +5079,13 @@ export default function App() {
 
       <main className="flex-grow">
         {selectedStoryId ? (
-          <CaseStudyPage story={storiesWithSync.find(s => s.id === selectedStoryId)!} />
+          <ErrorBoundary
+            fallbackTitle="Unable to load Case Study"
+            fallbackMessage="An error occurred while loading this story. You can return to all stories or try again."
+            onReset={() => setSelectedStoryId(null)}
+          >
+            <CaseStudyPage story={storiesWithSync.find(s => s.id === selectedStoryId)!} />
+          </ErrorBoundary>
         ) : activeNav === "Home" ? (
           <>
             {/* Hero Section */}
@@ -5116,7 +5191,13 @@ export default function App() {
         ) : activeNav === "How it Works" ? (
           <HowItWorksPage />
         ) : activeNav === "Education" ? (
-          <EducationPage />
+          <ErrorBoundary
+            fallbackTitle="Unable to load Education Content"
+            fallbackMessage="An error occurred while loading this article. You can try again or return to the main list."
+            onReset={() => setSelectedEducationId(null)}
+          >
+            <EducationPage />
+          </ErrorBoundary>
         ) : activeNav === "Stories" ? (
           <>
             {/* Stories Hero Section */}
@@ -5241,7 +5322,12 @@ export default function App() {
         ) : activeNav === "Contact" ? (
           <ContactPage />
         ) : activeNav === "Calculator" ? (
-          <CalculatorPage />
+          <ErrorBoundary
+            fallbackTitle="Unable to load Calculator"
+            fallbackMessage="An error occurred in the interactive calculator view. You can retry or return to the home page."
+          >
+            <CalculatorPage />
+          </ErrorBoundary>
         ) : (
           <div className="py-32 text-center">
             <h2 className="text-3xl font-bold mb-4">{activeNav} Page</h2>

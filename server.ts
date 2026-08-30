@@ -1,17 +1,46 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
 import crypto from "crypto";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const isProduction = process.env.NODE_ENV === "production";
+
+// In-memory rate limiting for server protection
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function isRateLimited(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
+    return false;
+  }
+
+  if (entry.count >= limit) {
+    return true;
+  }
+
+  entry.count += 1;
+  return false;
+}
+
+// Clean up stale rate limit entries periodically (every 5 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (now > value.resetTime) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 5 * 60 * 1000).unref?.();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
 
   // API Helper
   function hash(value: string | undefined): string | null {
@@ -19,8 +48,13 @@ async function startServer() {
     return crypto.createHash("sha256").update(value.trim().toLowerCase()).digest("hex");
   }
 
-  // API routes
+  // API routes with throttling
   app.get("/api/pixel-id", (req, res) => {
+    const clientIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "unknown";
+    if (isRateLimited(`pixel_${clientIp}`, 60, 60 * 1000)) {
+      return res.status(429).json({ error: "Too many requests. Please try again later." });
+    }
+
     const pixelId = process.env.META_PIXEL_ID;
     if (!pixelId) {
       return res.status(404).json({ error: "Meta Pixel ID not configured" });
@@ -29,6 +63,11 @@ async function startServer() {
   });
 
   app.get("/api/gtm-id", (req, res) => {
+    const clientIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "unknown";
+    if (isRateLimited(`gtm_${clientIp}`, 60, 60 * 1000)) {
+      return res.status(429).json({ error: "Too many requests. Please try again later." });
+    }
+
     const gtmId = process.env.GOOGLE_TAG_MANAGER_ID || "GTM-TP5FW48X";
     if (!gtmId) {
       return res.status(404).json({ error: "Google Tag Manager ID not configured" });
@@ -38,6 +77,15 @@ async function startServer() {
 
   app.post("/api/lead", async (req, res) => {
     try {
+      const clientIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "unknown";
+      // Allow up to 40 tracking/lead events per minute per IP to prevent unconstrained flooding
+      if (isRateLimited(`lead_${clientIp}`, 40, 60 * 1000)) {
+        return res.status(429).json({
+          success: false,
+          error: "Rate limit exceeded. Please slow down event dispatches.",
+        });
+      }
+
       const {
         eventName = "Lead",
         firstName,
@@ -62,8 +110,12 @@ async function startServer() {
       const pixelId = process.env.META_PIXEL_ID;
 
       if (!accessToken || !pixelId) {
-        console.error("Meta Credentials Missing: META_ACCESS_TOKEN or META_PIXEL_ID");
-        return res.status(500).json({ error: "Configuration error" });
+        // Return 200 with soft warning if preview/unconfigured so client tracking doesn't break UI flow
+        return res.status(200).json({
+          success: true,
+          status: "simulated_preview",
+          message: "Meta credentials not configured in environment.",
+        });
       }
 
       const userData: any = {};
@@ -102,34 +154,48 @@ async function startServer() {
         eventData.test_event_code = testEventCode;
       }
 
-      const fbResponse = await fetch(
-        `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
+      // Add a 8-second AbortController timeout to prevent unconstrained hung requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const fbResponse = await fetch(
+          `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(eventData),
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeoutId);
+        const result = (await fbResponse.json()) as any;
+
+        if (!fbResponse.ok) {
+          console.warn("Meta CAPI Error Response:", result);
+          return res.status(fbResponse.status).json({
+            success: false,
+            message: "Meta API rejected the event",
+            details: result,
+          });
         }
-      );
 
-      const result = (await fbResponse.json()) as any;
-
-      if (!fbResponse.ok) {
-        console.error("Meta CAPI Error Response:", result);
-        return res.status(fbResponse.status).json({
-          success: false,
-          message: "Meta API rejected the event",
-          details: result,
+        return res.status(200).json({
+          success: true,
+          fbTraceId: result.fbtrace_id,
         });
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === "AbortError") {
+          return res.status(504).json({ success: false, error: "Meta API timeout" });
+        }
+        throw fetchErr;
       }
-
-      return res.status(200).json({
-        success: true,
-        fbTraceId: result.fbtrace_id,
-      });
     } catch (error: any) {
-      console.error("Internal Server Error:", error);
+      console.error("Internal Server Error in /api/lead:", error);
       return res.status(500).json({
         success: false,
         error: error.message,
@@ -138,7 +204,7 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
