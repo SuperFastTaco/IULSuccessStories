@@ -960,6 +960,7 @@ The result? The life insurance costs dragging on the policy are completely minim
     duration: '15 min read',
     category: 'Advanced',
     image: 'https://picsum.photos/seed/financial-architecture/800/600',
+    audioUrl: '/audio/building-an-iul-the-correct-way-kevin-nuber.mp3',
     content: `
 ## Building an IUL the Correct Way vs. the Commission Way
 
