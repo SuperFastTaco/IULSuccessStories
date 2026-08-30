@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2614" height="1318" viewBox="0 0 2614 1318" role="img" aria-labelledby="title description">
+  <title id="title">Two Buckets premium allocation graphic</title>
+  <desc id="description">A one-thousand-dollar premium divides into a ninety-five percent safe bond allocation and a five percent option budget.</desc>
+
+  <defs>
+    <pattern id="grid" width="154" height="154" patternUnits="userSpaceOnUse">
+      <path d="M154 0H0V154" fill="none" stroke="#E8ECE9" stroke-width="1.5"/>
+    </pattern>
+
+    <radialGradient id="canvasGlow" cx="76%" cy="58%" r="69%">
+      <stop offset="0" stop-color="#F5F8F3" stop-opacity="0.8"/>
+      <stop offset="0.62" stop-color="#FBFCFB" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="premiumCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#393A39"/>
+      <stop offset="1" stop-color="#2F302F"/>
+    </linearGradient>
+
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#263126" flood-opacity="0.10"/>
+    </filter>
+
+    <filter id="premiumShadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="20" stdDeviation="25" flood-color="#222422" flood-opacity="0.17"/>
+    </filter>
+
+    <filter id="tagShadow" x="-25%" y="-40%" width="150%" height="180%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#334033" flood-opacity="0.07"/>
+    </filter>
+
+    <style>
+      .sans { font-family: "Avenir Next", Arial, "Helvetica Neue", Helvetica, sans-serif; }
+      .heavy { font-weight: 800; }
+      .bold { font-weight: 700; }
+    </style>
+  </defs>
+
+  <!-- Soft technical-paper background -->
+  <rect width="2614" height="1318" fill="#FDFEFD"/>
+  <rect width="2614" height="1318" fill="url(#canvasGlow)"/>
+  <rect width="2614" height="1318" fill="url(#grid)" opacity="0.72"/>
+  <circle cx="-93" cy="1512" r="620" fill="none" stroke="#E5E8E5" stroke-width="4" opacity="0.72"/>
+
+  <!-- Premium source -->
+  <g id="premium-source" filter="url(#premiumShadow)">
+    <rect x="89" y="372" width="708" height="409" rx="73" fill="url(#premiumCard)"/>
+  </g>
+  <g class="sans" fill="#FFFFFF">
+    <text x="162" y="507" font-size="48" class="bold" opacity="0.84">Premium</text>
+    <text x="158" y="667" font-size="159" class="heavy" letter-spacing="-6">$1,000</text>
+  </g>
+
+  <!-- Allocation paths -->
+  <path d="M797 569 L1481 372" fill="none" stroke="#82AD65" stroke-width="21" stroke-linecap="round"/>
+  <path d="M1470 337 L1543 353 L1489 405 Z" fill="#82AD65"/>
+  <path d="M797 750 L1479 982" fill="none" stroke="#626D80" stroke-width="21" stroke-linecap="round"/>
+  <path d="M1490 949 L1542 1003 L1468 1015 Z" fill="#626D80"/>
+
+  <!-- Flow labels -->
+  <g id="green-flow-label" filter="url(#tagShadow)">
+    <rect x="1018" y="412" width="177" height="89" rx="31" fill="#FFFFFF" stroke="#82AD65" stroke-width="2.5"/>
+    <text x="1106.5" y="471" text-anchor="middle" class="sans heavy" font-size="44" fill="#82AD65">$950</text>
+  </g>
+  <g id="blue-flow-label" filter="url(#tagShadow)">
+    <rect x="1018" y="825" width="148" height="89" rx="31" fill="#FFFFFF" stroke="#626D80" stroke-width="2.5"/>
+    <text x="1092" y="884" text-anchor="middle" class="sans heavy" font-size="44" fill="#536078">$50</text>
+  </g>
+
+  <!-- Safe bond allocation card -->
+  <g id="safe-bond-card" filter="url(#cardShadow)">
+    <rect x="1570" y="31" width="940" height="637" rx="69" fill="#FFFFFF" stroke="#E4E8E5" stroke-width="2"/>
+  </g>
+
+  <g id="safe-bond-content" class="sans">
+    <rect x="1644" y="104" width="603" height="108" rx="54" fill="#EDF2E9"/>
+    <circle cx="1696" cy="158" r="13.5" fill="#82AD65"/>
+    <text x="1729" y="175" font-size="46" class="heavy" fill="#47733D">Safe bond allocation</text>
+
+    <text x="1642" y="416" font-size="160" class="heavy" fill="#47733D" letter-spacing="-7">95%</text>
+    <text x="2048" y="407" font-size="60" class="heavy" fill="#292A29">about $950</text>
+
+    <text x="1643" y="527" font-size="49" font-weight="400" fill="#6C7180">High-quality bonds are used to</text>
+    <text x="1643" y="588" font-size="49" font-weight="400" fill="#6C7180">secure the floor.</text>
+  </g>
+
+  <!-- Option budget card -->
+  <g id="option-budget-card" filter="url(#cardShadow)">
+    <rect x="1570" y="723" width="940" height="468" rx="69" fill="#FFFFFF" stroke="#E4E8E5" stroke-width="2"/>
+  </g>
+
+  <g id="option-budget-content" class="sans">
+    <rect x="1644" y="795" width="460" height="108" rx="54" fill="#F0F0F0"/>
+    <circle cx="1696" cy="849" r="13.5" fill="#536078"/>
+    <text x="1729" y="866" font-size="46" class="heavy" fill="#536078">Option budget</text>
+
+    <text x="1643" y="1094" font-size="160" class="heavy" fill="#536078" letter-spacing="-7">5%</text>
+    <text x="1932" y="1083" font-size="60" class="heavy" fill="#292A29">about $50</text>
+  </g>
+</svg>

@@ -1275,9 +1275,132 @@ You can still sell a policy if you illustrate at a **6.14%**. You can also use a
 `
 };
 
+const HEDGING_ARTICLE: EducationItem = {
+  id: 15,
+  title: "The Mechanics of IUL Hedging",
+  description: "A step-by-step mathematical breakdown of how insurance companies deliver downside protection and capped upside potential through institutional hedging.",
+  type: 'article',
+  duration: '10 min read',
+  category: 'Advanced',
+  image: 'https://picsum.photos/seed/iul-hedging/800/600',
+  videoUrl: 'https://www.youtube.com/embed/8tuBc6dCJJg',
+  content: `
+## The Mechanics of IUL Hedging
+
+Many times the IUL promise sounds too good to be true: **you capture a substantial portion of the stock market’s upside (up to a cap), but if the market crashes, you are contractually guaranteed a 0% floor**.
+
+To the average consumer, this sounds like a classic sales pitch. Skeptics rightly assume there must be a catch, or that the insurance company is taking on an astronomical amount of risk that will eventually cause the policy to collapse.
+
+But when you lift the hood and look at the actual engine of an IUL, you realize there are no tricks, no speculation, and no gambling. **It is simple math combined with institutional hedging**.
+
+Here is an in-depth, step-by-step mathematical breakdown of how insurance companies deliver downside protection and capped upside potential without taking on market risk.
+
+### Part 1: The General Account and the "Two-Bucket" Method
+
+An IUL policy is fundamentally a general account life insurance product. This means that when you pay your premium, your money is not actually invested in the stock market. You do not own shares of any index, and you do not capture stock dividends. You also won’t ever receive a negative interest rate if the market goes down.
+
+Instead, the insurance company splits every single dollar of premium you pay into two distinct "buckets":
+
+![image](/picture/two buckets.svg|The Two-Bucket Allocation: 95% General Portfolio & 5% Option Budget)
+
+- **The General Portfolio:** Roughly **95%** of your premium is immediately allocated to the insurance company's general portfolio. This portfolio is highly conservative, consisting almost entirely of highly rated, investment-grade corporate bonds, government debt, mortgage-backed securities and are highly regulated.
+- **The Option Budget:** The remaining **5%** is carved out as an "option budget". This is the only portion of your money that is put at “risk” to generate index-linked growth.
+
+Let's look at the exact mathematical mechanics using a **$1,000 premium payment**.
+
+### Securing the 0% Floor
+
+To guarantee that you never lose your principal, the insurance company takes **$950** of your $1,000 premium and invests it in their conservative bond portfolio. At an illustrative general account yield of **5.3%**, look at what happens to that $950 over the course of a 365-day policy year:
+
+**$950 × 1.053 = $1,000.35**
+
+By the end of the year, **your $950 has grown back to your full original premium of $1,000**.
+
+This is how the **0% floor** is guaranteed. The stock market could drop by 40%, but because 95% of your money was locked in safe, interest-bearing bonds, your core principal remains completely untouched and fully intact at the end of the year.
+
+### Phase 2: The Option Budget
+
+If $950 went to secure your principal, what happens to the remaining **$50**?
+
+This $50 is the insurance company’s **option budget**. Rather than speculating or taking a directional bet on the market, the insurance carrier uses this budget to engage in a process called **replicative hedging**. They do this by purchasing derivative contracts—specifically, options—from major institutional investment banks. Some insurance companies do the hedging internally, eliminating the investment bank.
+
+Because the insurance company is writing a contract that promises to pay the client a return equal to the index's growth (up to a cap), the carrier has created an equity liability on its balance sheet. To offload this risk, they purchase an options package that perfectly mirrors that liability.
+
+### The Mechanics of the Packaged Call Spread
+
+To hedge a typical IUL strategy (for example, a 12% S&P 500 cap with a 0% floor), the insurance company purchases a **packaged call spread** from an investment bank.
+
+A call spread consists of two simultaneous option trades:
+
+- **Buying an "At-The-Money" Call Option:** The carrier buys a call option on the S&P 500 with a strike price at the current index level (representing a 0% gain). This option pays off dollar-for-dollar as the index rises.
+- **Selling an "Out-of-The-Money" Call Option:** At the exact same time, the carrier *sells* (writes) a call option to the investment bank with a strike price set at the policy's cap rate (e.g., 12%).
+
+The money received from selling the 12% option partially offsets the cost of buying the 0% option. The net cost of this combined "call spread" is designed to fit perfectly within the carrier's **$50 option budget**.
+
+### Phase 3: The Three Market Scenarios
+
+Once the hedge is in place, the mathematical payouts align perfectly under every possible market condition:
+
+### Scenario A: The Market Plummets (e.g., S&P 500 drops 30%)
+
+- **The Options:** Because the S&P 500 finished below the starting strike price, the call options expire completely worthless. The $50 option budget is lost.
+- **The Bonds:** The $950 general portfolio matures, earning its interest, and grows back to exactly $1,000.
+- **The Result:** The client is credited **0%**. The principal is intact, and "Zero becomes the Hero".
+
+### Scenario B: Moderate Market Growth (e.g., S&P 500 rises 8%)
+
+- **The Options:** The S&P 500 grew by 8%. The institutional investment bank pays the insurance company an 8% return on the option contract.
+- **The Bonds:** The general portfolio matures to $1,000.
+- **The Result:** The insurance company passes the 8% option payout directly to the client's cash value. The client's account is credited **8%**.
+
+### Scenario C: A Bull Market Run (e.g., S&P 500 shoots up 25%)
+
+- **The Options:** The index grew past the 12% cap. The carrier's purchased 0% option pays out the full 25%. However, because the carrier *sold* an option at the 12% strike, they owe the investment bank 13% (25% minus 12%).
+- **The Math:** 25% (received) minus 13% (owed) = a net payoff of exactly **12%**.
+- **The Result:** The client's account is credited the maximum cap of **12%**.
+
+### Does the Carrier Keep the Excess Market Gains?
+
+A very common misconception in the IUL marketplace is that if the S&P 500 goes up 30%, and your policy is capped at 12%, the insurance company pockets the remaining 18% as pure profit.
+
+**This is completely false.**
+
+Because the insurance company uses a fully hedged call spread, they have contractually neutralized any upside above the cap. When the market hits 30%, the excess 18% is legally transferred back to the investment bank that held the other side of the option trade.
+
+The insurance company is in the business of managing **insurance risk**, not gambling on equity markets. They design the product to be completely market-neutral. Whether the market goes up 100% or down 50%, the carrier's profit margin remains virtually identical. They are the "house," and the house always immunizes its book.
+
+### What Causes Caps and Floors to Change?
+
+Because IUL crediting relies on real option pricing, the cap rates on these policies cannot be guaranteed at high levels forever. They fluctuate over time based on rational, market-based pricing.
+
+Life insurance carriers review two primary variables to declare their cap rates:
+
+### 1. The Option Budget (Derived from Bond Yields)
+
+The size of the option budget is dictated by the yields of the general account's bond portfolio.
+
+- **Low-Interest Rate Environments:** When interest rates are low, the carrier's bond portfolio yields less. The carrier must allocate more than $950 (e.g., $960) to guarantee the 0% floor. This leaves a smaller option budget ($40), which naturally compresses cap rates down.
+- **High-Interest Rate Environments:** As interest rates rise, the general portfolio yield increases. The carrier can allocate less money (e.g., $940) to guarantee the floor, leaving a larger option budget ($60) to purchase higher caps.
+
+### 2. The Cost of Options (Market Volatility)
+
+Option prices are set by Wall Street investment banks and are heavily influenced by market volatility (often measured by the VIX), treasury rates, and dividend yields.
+
+- **High Volatility:** When the stock market is experiencing wild swings, option prices skyrocket. Because options are more expensive, the carrier's fixed option budget can only afford to buy a lower cap.
+- **Low Volatility:** When the market is calm, options are cheap. The same option budget can purchase a significantly wider call spread, resulting in higher cap rates for policyholders.
+
+### The Summary
+
+Indexed Universal Life is not a get-rich-quick scheme, nor is it a magical investment. It is a highly engineered, structured fixed-income instrument designed to provide a risk-premium return over traditional fixed accounts.
+
+By accepting a cap on the very best market years, you legally bind the insurance company to absorb 100% of your market downside. It is institutional math working exactly as designed—shielding your principal so your wealth can compound safely, year after year.
+`
+};
+
 EDUCATION_CONTENT.push(NEW_ARTICLE);
 EDUCATION_CONTENT.push(IUL_GUARANTEES_ARTICLE);
 EDUCATION_CONTENT.push(AVERAGE_RETURN_ARTICLE);
+EDUCATION_CONTENT.push(HEDGING_ARTICLE);
 
   const STORIES: SuccessStory[] = [
   { 
@@ -2650,10 +2773,32 @@ export default function App() {
                       Building an IUL the <br />
                       <span className="text-primary">Correct Way</span>
                     </>
+                  ) : selectedItem.title === "The Mechanics of IUL Hedging" ? (
+                    <>
+                      The Mechanics of <br />
+                      <span className="text-primary">IUL Hedging</span>
+                    </>
                   ) : (
                     selectedItem.title
                   )}
                 </h1>
+
+                {/* Video Player in Hero Section */}
+                {selectedItem.videoUrl && (
+                  <div className="mt-8 mb-8 aspect-video w-full relative bg-black/60 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/15">
+                    <iframe 
+                      className="w-full h-full"
+                      src={selectedItem.videoUrl.startsWith('https://youtu.be/')
+                        ? `https://www.youtube.com/embed/${selectedItem.videoUrl.split('youtu.be/')[1]?.split('?')[0]}`
+                        : selectedItem.videoUrl.includes('watch?v=')
+                        ? `https://www.youtube.com/embed/${selectedItem.videoUrl.split('watch?v=')[1]?.split('&')[0]}`
+                        : selectedItem.videoUrl}
+                      title={selectedItem.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between pt-6 border-t border-white/10">
                   <div className="flex items-center gap-4">
@@ -2706,7 +2851,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden"
             >
-              {selectedItem.type === 'video' && (
+              {selectedItem.type === 'video' && !selectedItem.videoUrl && (
                 <div className="aspect-video w-full relative bg-slate-200 dark:bg-slate-700 rounded-[2.5rem] overflow-hidden shadow-2xl mb-16 border-8 border-white dark:border-slate-800">
                   <iframe 
                     className="w-full h-full"
@@ -2862,7 +3007,7 @@ export default function App() {
                         className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-none shadow-lg text-primary" 
                       />
                     </div>
-                    {item.type === 'video' && (
+                    {(item.type === 'video' || item.videoUrl) && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-primary/90 text-white flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
                           <PlayCircle size={32} fill="currentColor" />
@@ -2873,8 +3018,8 @@ export default function App() {
                   <div className="p-8">
                     <div className="flex items-center gap-4 mb-4 text-slate-400 text-xs font-bold uppercase tracking-widest">
                       <div className="flex items-center gap-1.5">
-                        {item.type === 'video' ? <PlayCircle size={14} /> : <FileText size={14} />}
-                        <span>{item.type}</span>
+                        {item.type === 'video' || item.videoUrl ? <PlayCircle size={14} /> : <FileText size={14} />}
+                        <span>{item.type === 'video' ? 'video' : item.videoUrl ? 'video + article' : 'article'}</span>
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1.5">
@@ -2889,7 +3034,7 @@ export default function App() {
                       {item.description}
                     </p>
                     <div className="flex items-center text-primary font-bold text-sm gap-2">
-                      <span>{item.type === 'video' ? 'Watch Video' : 'Read Article'}</span>
+                      <span>{item.type === 'video' ? 'Watch Video' : item.videoUrl ? 'Watch & Read' : 'Read Article'}</span>
                       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
