@@ -1123,6 +1123,7 @@ const IUL_GUARANTEES_ARTICLE: EducationItem = {
   duration: '10 min read',
   category: 'Misconceptions',
   image: '/picture/1782708948709.jpeg',
+  audioUrl: '/audio/iul-guarantees-are-misleading-kevin-nuber.mp3',
   content: `
 ## IUL Guarantees are Misleading
 
