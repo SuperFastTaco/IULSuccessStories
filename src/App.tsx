@@ -1899,6 +1899,51 @@ EDUCATION_CONTENT.push(HEDGING_ARTICLE);
     illustratedTotals: { premium: "60,970", rate: "6.00%" },
     finalAnalysis: "This policy is currently underperforming relative to the original illustration due to market returns trailing the 6% projection. Even though the client has significantly overfunded the contract by paying over $26,000 more in premium than originally planned, the average index credit of 3.32% is much less than it needs to be. The client is in one indexing strategy and has not diversified the allocations in order to acheive more consistent index credits."
   },
+  {
+    id: 12,
+    title: "11 Year Old Policy Averaging 6.54%",
+    age: 54,
+    policyYears: 11,
+    return: "4.49%",
+    category: "Stability",
+    details: {
+      totalPremium: "$67,200",
+      indexRate: "4.49%",
+      interestCredited: "$3,609",
+      accumulationValue: "$83,795",
+      deathBenefit: "$232,946",
+      costOfInsurance: "$384"
+    },
+    actualLedger: [
+      { year: 2015, premium: "13,350", rate: "0.00%", accum: "10,653", deathBenefit: "232,946" },
+      { year: 2016, premium: "13,350", rate: "6.56%", accum: "22,728", deathBenefit: "232,946" },
+      { year: 2017, premium: "13,350", rate: "20.52%", accum: "40,351", deathBenefit: "232,946" },
+      { year: 2018, premium: "13,350", rate: "0.00%", accum: "50,934", deathBenefit: "232,946" },
+      { year: 2019, premium: "13,350", rate: "15.21%", accum: "70,996", deathBenefit: "232,946" },
+      { year: 2020, premium: "450", rate: "8.53%", accum: "75,390", deathBenefit: "232,946" },
+      { year: 2021, premium: "0", rate: "8.40%", accum: "79,672", deathBenefit: "232,946" },
+      { year: 2022, premium: "0", rate: "0.00%", accum: "77,796", deathBenefit: "232,946" },
+      { year: 2023, premium: "0", rate: "3.45%", accum: "78,648", deathBenefit: "232,946" },
+      { year: 2024, premium: "0", rate: "4.78%", accum: "80,660", deathBenefit: "232,946" },
+      { year: 2025, premium: "0", rate: "4.49%", accum: "83,795", deathBenefit: "232,946" },
+    ],
+    illustratedLedger: [
+      { year: 1, premium: "13,350", rate: "7.00%", accum: "11,464", deathBenefit: "232,946" },
+      { year: 2, premium: "13,350", rate: "7.00%", accum: "23,696", deathBenefit: "232,946" },
+      { year: 3, premium: "13,350", rate: "7.00%", accum: "36,755", deathBenefit: "232,946" },
+      { year: 4, premium: "13,350", rate: "7.00%", accum: "50,708", deathBenefit: "232,946" },
+      { year: 5, premium: "13,350", rate: "7.00%", accum: "65,629", deathBenefit: "232,946" },
+      { year: 6, premium: "450", rate: "7.00%", accum: "68,545", deathBenefit: "232,946" },
+      { year: 7, premium: "0", rate: "7.00%", accum: "71,281", deathBenefit: "232,946" },
+      { year: 8, premium: "0", rate: "7.00%", accum: "74,293", deathBenefit: "232,946" },
+      { year: 9, premium: "0", rate: "7.00%", accum: "77,614", deathBenefit: "232,946" },
+      { year: 10, premium: "0", rate: "7.00%", accum: "81,277", deathBenefit: "232,946" },
+      { year: 11, premium: "0", rate: "7.00%", accum: "86,476", deathBenefit: "232,946" },
+    ],
+    actualTotals: { premium: "67,200", rate: "6.54%" },
+    illustratedTotals: { premium: "67,200", rate: "7.00%" },
+    finalAnalysis: "This Allianz Life Pro+ policy was issued in December 2014 at age 54. It received $13,350 in each of its first five policy years and $450 in year six, for total premiums of $67,200, with no further premiums recorded through year 11. The latest supplied statement, ending December 23, 2025, shows an accumulation value of $83,794.75 and a level death benefit of $232,946. During that year, the policy earned $3,608.93 in interest credits at a blended index rate of 4.49%. After $384.10 in insurance charges and $90 in expense charges, accumulation value increased by $3,134.83. Across the 11 recorded years, the arithmetic average index crediting rate is 6.54%, before policy charges; this is not a net policy return. The supplied illustration, prepared in November 2014, assumed 7.00% and projected $86,476 in accumulation value at the end of year 11. Actual accumulation is $2,681.25, or approximately 3.10%, below that projection. The policy was ahead of the illustration at year seven, but the 0% credit in 2022 and subsequent rates below 7.00%, together with ongoing charges, brought it slightly below the original projection. This comparison uses accumulation values before loans and shows both the growth achieved and the difference from the original assumptions."
+  },
 ];
 
 const getCookie = (name: string) => {
