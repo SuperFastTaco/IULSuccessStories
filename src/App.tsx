@@ -1944,6 +1944,203 @@ EDUCATION_CONTENT.push(HEDGING_ARTICLE);
     illustratedTotals: { premium: "67,200", rate: "7.00%" },
     finalAnalysis: "This Allianz Life Pro+ policy was issued in December 2014 at age 54. It received $13,350 in each of its first five policy years and $450 in year six, for total premiums of $67,200, with no further premiums recorded through year 11. The latest supplied statement, ending December 23, 2025, shows an accumulation value of $83,794.75 and a level death benefit of $232,946. During that year, the policy earned $3,608.93 in interest credits at a blended index rate of 4.49%. After $384.10 in insurance charges and $90 in expense charges, accumulation value increased by $3,134.83. Across the 11 recorded years, the arithmetic average index crediting rate is 6.54%, before policy charges; this is not a net policy return. The supplied illustration, prepared in November 2014, assumed 7.00% and projected $86,476 in accumulation value at the end of year 11. Actual accumulation is $2,681.25, or approximately 3.10%, below that projection. The policy was ahead of the illustration at year seven, but the 0% credit in 2022 and subsequent rates below 7.00%, together with ongoing charges, brought it slightly below the original projection. This comparison uses accumulation values before loans and shows both the growth achieved and the difference from the original assumptions."
   },
+  {
+    "id": 13,
+    "title": "12 Year Old Policy Averaging 6.31%",
+    "age": 44,
+    "policyYears": 12,
+    "return": "5.08%",
+    "category": "Underperform",
+    "details": {
+      "totalPremium": "$515,700",
+      "indexRate": "5.08%",
+      "interestCredited": "$32,017",
+      "accumulationValue": "$686,897",
+      "deathBenefit": "$2,438,520",
+      "costOfInsurance": "$4,454"
+    },
+    "actualLedger": [
+      {
+        "year": 2015,
+        "premium": "111,762",
+        "rate": "9.21%",
+        "accum": "102,724",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2016,
+        "premium": "111,762",
+        "rate": "0.00%",
+        "accum": "196,075",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2017,
+        "premium": "111,762",
+        "rate": "12.02%",
+        "accum": "324,720",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2018,
+        "premium": "111,762",
+        "rate": "12.38%",
+        "accum": "469,793",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2019,
+        "premium": "52,952",
+        "rate": "1.99%",
+        "accum": "517,210",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2020,
+        "premium": "0",
+        "rate": "12.50%",
+        "accum": "568,011",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2021,
+        "premium": "0",
+        "rate": "7.96%",
+        "accum": "599,872",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2022,
+        "premium": "0",
+        "rate": "4.06%",
+        "accum": "611,249",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2023,
+        "premium": "0",
+        "rate": "0.00%",
+        "accum": "598,666",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2024,
+        "premium": "0",
+        "rate": "4.95%",
+        "accum": "615,477",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2025,
+        "premium": "0",
+        "rate": "5.53%",
+        "accum": "644,539",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2026,
+        "premium": "15,700",
+        "rate": "5.08%",
+        "accum": "686,897",
+        "deathBenefit": "2,438,520"
+      }
+    ],
+    "illustratedLedger": [
+      {
+        "year": 1,
+        "premium": "111,762",
+        "rate": "7.00%",
+        "accum": "100,536",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 2,
+        "premium": "111,762",
+        "rate": "7.00%",
+        "accum": "207,881",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 3,
+        "premium": "111,762",
+        "rate": "7.00%",
+        "accum": "322,563",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 4,
+        "premium": "111,762",
+        "rate": "7.00%",
+        "accum": "445,212",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 5,
+        "premium": "52,952",
+        "rate": "7.00%",
+        "accum": "516,588",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 6,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "539,299",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 7,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "563,720",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 8,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "589,950",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 9,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "618,141",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 10,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "648,500",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 11,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "689,606",
+        "deathBenefit": "2,438,520"
+      },
+      {
+        "year": 12,
+        "premium": "0",
+        "rate": "7.00%",
+        "accum": "733,235",
+        "deathBenefit": "2,438,520"
+      }
+    ],
+    "actualTotals": {
+      "premium": "515,700",
+      "rate": "6.31%"
+    },
+    "illustratedTotals": {
+      "premium": "500,000",
+      "rate": "7.00%"
+    },
+    "finalAnalysis": "This Allianz Life Pro+ policy was issued in February 2014 at age 44. The first five policy years received $500,000 in premiums, matching the original plan, followed by no premiums in years six through eleven. A further $15,699.62 in gross premiums was paid in year twelve, bringing total premiums to $515,699.62. The latest supplied statement, ending February 12, 2026, shows an accumulation value of $686,897.37. During that year, $14,886.13 of premium was credited after premium charges, and the policy earned $32,017.00 in interest credits. After $4,454.40 in insurance charges and $90 in expense charges, accumulation value increased by $42,358.73. The latest blended crediting rate was 5.08%, including the fixed allocation. Across all twelve recorded years, the arithmetic average of annual crediting rates is 6.31% before policy charges; it includes zero-credit years and is not a net policy return. The original illustration, prepared in January 2014, assumed 7.00% and projected $733,235 in accumulation value at the end of year twelve. Actual accumulation is $46,337.63, or approximately 6.32%, below that projection despite the additional premium. The policy was ahead of the illustration at year eight, but subsequent annual credits below 7.00% and ongoing charges left it behind the original projection. The comparison uses accumulation values before loans and the level $2,438,520 basic death benefit before any loan deductions. These results show the policy's growth and its shortfall against the original assumptions; future results are not guaranteed."
+  },
 ];
 
 const getCookie = (name: string) => {
