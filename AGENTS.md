@@ -130,6 +130,16 @@ Published case study: https://www.iulsuccessstories.com/?nav=Stories&story=12
 - The Sheet was copied from Card #3, fully replaced with Card #12 data, and verified in its own folder. Both 11-row ledgers, graph, showcase, and summary were checked against the saved Sheet; Cards #1–11 were confirmed unchanged. The master record received Card #12 in row 15.
 - Initial story publication commit: `1e80df70404012764a6319de6465512e244006dd`. Detailed private provenance remains in Card #12's source/update note and spreadsheet cell notes, not in the public repository.
 
+## Completed policies and death claims
+
+- Stop the performance ledgers, graph and summary at the last supplied statement date. Keep calendar years and completed policy years aligned; do not add a future year or put a death-claim payment into accumulation value.
+- Record the paid claim amount and year from Kevin's confirmation or settlement evidence, separately from the statement's coverage amount. A coverage statement alone does not prove settlement timing, cents, interest or beneficiary allocations. Preserve the exact stamp wording Kevin requests.
+- For a paid-claim story, use the optional `deathClaim` metadata in `SuccessStory`. It supplies the paid amount, paid year, final statement date and stamp asset. Show the red claim-paid image directly below both comparison ledgers and before the graph, with accessible alternative text. Final-statement language replaces current in-force wording only for that story.
+- Check basic death benefit and separate riders carefully. Use the documented combined coverage basis and do not add accumulation again when the reported basic benefit already includes it. Explain material differences between actual coverage and the original illustrated plan, such as an illustrated switch from increasing to level coverage that did not occur.
+- If a review duplicates a calendar-year row, resolve it using policy dates and carrier statements before totaling premiums, calculating averages or pairing the illustration. Read the exact allocated index variant; similarly named unallocated rows can have different rates. Document corrections in private source notes and Sheet cell notes.
+- Mark the card Sheet as a completed policy with a paid claim and final statement date. Preserve the master's existing columns and original issue date; consult the card's closed status before treating a later anniversary as another annual-update opportunity.
+- Preserve historical gross-premium source precision and distinguish it from net premiums used in annual accumulation reconciliations. Retain private provenance and keep insured identities and policy numbers out of public story data.
+
 ## Future Education work
 
 Kevin plans separate Education updates. Read the requested articles/assets and agree on the concrete scope when that work begins. Preserve existing article IDs, deep links, image/audio references, and unrelated education content during Stories maintenance.

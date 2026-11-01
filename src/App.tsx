@@ -639,6 +639,12 @@ interface SuccessStory {
   illustratedLedger?: LedgerEntry[];
   actualTotals?: { premium: string; rate: string };
   illustratedTotals?: { premium: string; rate: string };
+  deathClaim?: {
+    amount: string;
+    paidYear: number;
+    statementEndDate: string;
+    stampSrc: string;
+  };
   finalAnalysis?: string;
 }
 
@@ -2141,6 +2147,48 @@ EDUCATION_CONTENT.push(HEDGING_ARTICLE);
     },
     "finalAnalysis": "This Allianz Life Pro+ policy was issued in February 2014 at age 44. The first five policy years received $500,000 in premiums, matching the original plan, followed by no premiums in years six through eleven. A further $15,699.62 in gross premiums was paid in year twelve, bringing total premiums to $515,699.62. The latest supplied statement, ending February 12, 2026, shows an accumulation value of $686,897.37. During that year, $14,886.13 of premium was credited after premium charges, and the policy earned $32,017.00 in interest credits. After $4,454.40 in insurance charges and $90 in expense charges, accumulation value increased by $42,358.73. The latest blended crediting rate was 5.08%, including the fixed allocation. Across all twelve recorded years, the arithmetic average of annual crediting rates is 6.31% before policy charges; it includes zero-credit years and is not a net policy return. The original illustration, prepared in January 2014, assumed 7.00% and projected $733,235 in accumulation value at the end of year twelve. Actual accumulation is $46,337.63, or approximately 6.32%, below that projection despite the additional premium. The policy was ahead of the illustration at year eight, but subsequent annual credits below 7.00% and ongoing charges left it behind the original projection. The comparison uses accumulation values before loans and the level $2,438,520 basic death benefit before any loan deductions. These results show the policy's growth and its shortfall against the original assumptions; future results are not guaranteed."
   },
+  {
+    id: 14,
+    title: "$39.46 Million Death Claim Paid",
+    age: 37,
+    policyYears: 9,
+    return: "7.79%",
+    category: "Safety",
+    details: {
+      totalPremium: "$10,836,889",
+      indexRate: "7.79%",
+      interestCredited: "$844,578",
+      accumulationValue: "$11,537,593",
+      deathBenefit: "$39,458,334.85",
+      costOfInsurance: "$147,925"
+    },
+    actualLedger: [
+      { year: 2017, premium: "1,548,127", rate: "13.19%", accum: "1,365,574", deathBenefit: "29,286,316" },
+      { year: 2018, premium: "1,548,127", rate: "11.76%", accum: "2,949,136", deathBenefit: "30,851,259" },
+      { year: 2019, premium: "1,548,127", rate: "3.06%", accum: "4,327,430", deathBenefit: "32,228,167" },
+      { year: 2020, premium: "1,548,127", rate: "13.65%", accum: "6,322,110", deathBenefit: "34,243,852" },
+      { year: 2021, premium: "1,548,127", rate: "6.82%", accum: "8,049,283", deathBenefit: "35,970,025" },
+      { year: 2022, premium: "1,548,127", rate: "3.66%", accum: "9,584,726", deathBenefit: "37,505,468" },
+      { year: 2023, premium: "1,548,127", rate: "0.00%", accum: "10,770,724", deathBenefit: "38,691,466" },
+      { year: 2024, premium: "0", rate: "5.20%", accum: "11,020,226", deathBenefit: "38,913,700" },
+      { year: 2025, premium: "0", rate: "7.79%", accum: "11,537,593", deathBenefit: "39,458,335" },
+    ],
+    illustratedLedger: [
+      { year: 1, premium: "1,548,127", rate: "7.00%", accum: "1,346,820", deathBenefit: "29,267,562" },
+      { year: 2, premium: "1,548,127", rate: "7.00%", accum: "2,773,742", deathBenefit: "30,694,484" },
+      { year: 3, premium: "1,548,127", rate: "7.00%", accum: "4,283,938", deathBenefit: "32,204,680" },
+      { year: 4, premium: "1,548,127", rate: "7.00%", accum: "5,882,584", deathBenefit: "33,803,326" },
+      { year: 5, premium: "1,548,127", rate: "7.00%", accum: "7,573,815", deathBenefit: "35,494,557" },
+      { year: 6, premium: "1,548,127", rate: "7.00%", accum: "9,370,406", deathBenefit: "37,291,148" },
+      { year: 7, premium: "1,548,127", rate: "7.00%", accum: "11,278,754", deathBenefit: "39,199,496" },
+      { year: 8, premium: "0", rate: "7.00%", accum: "11,844,161", deathBenefit: "27,920,742" },
+      { year: 9, premium: "0", rate: "7.00%", accum: "12,434,228", deathBenefit: "27,920,742" },
+    ],
+    actualTotals: { premium: "10,836,889", rate: "7.24%" },
+    illustratedTotals: { premium: "10,836,889", rate: "7.00%" },
+    deathClaim: { amount: "$39,458,334", paidYear: 2025, statementEndDate: "February 9, 2025", stampSrc: "/picture/card14-death-claim-paid.png" },
+    finalAnalysis: "This Allianz Life Pro+ policy was issued in February 2016 at age 37. The recorded premium history shows seven annual payments of approximately $1,548,127, totaling $10,836,889 at the source's reported whole-dollar precision, followed by no premium in the final two completed years. The final supplied statement, ending February 9, 2025, shows accumulation value of $11,537,592.85. In that year, $844,578.31 in interest credits exceeded $147,925.33 in insurance charges, $112,169.28 in rider charges, and $67,116.48 in expense charges, increasing accumulation by $517,367.22. The latest blended annual crediting rate was 7.79%, and the nine-year arithmetic average was 7.24% before policy charges, including the zero-credit year. That average measures annual credits rather than a compounded or net policy return. The original January 2016 illustration assumed 7.00% and projected $12,434,228 at the end of year nine. Actual accumulation was $896,635.15, or approximately 7.21%, below that projection. The original plan also called for a switch from increasing Option B to level Option A coverage at the beginning of year eight. The actual policy retained Option B, so the cash-value comparison reflects different death-benefit coverage as well as the timing of credits and ongoing charges. At the final statement, reported basic death benefit of $29,458,334.85 plus the $10,000,000 term rider provided total death-benefit coverage of $39,458,334.85. The insured died in 2025, and a $39,458,334 death claim was paid. The claim is presented separately as the policy's insurance benefit. The performance ledgers stop at the last statement date, and the accumulation comparison uses values before loans."
+  },
 ];
 
 const getCookie = (name: string) => {
@@ -3439,7 +3487,7 @@ export default function App() {
             <div className="mb-16">
               <div className="flex gap-4">
                 <span className="px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider">
-                  {story.category}
+                  {story.deathClaim ? 'Death Claim Paid' : story.category}
                 </span>
                 <span className="px-4 py-1 rounded-full bg-slate-200 text-slate-600 text-sm font-bold uppercase tracking-wider">
                   Year {story.policyYears}
@@ -3451,7 +3499,10 @@ export default function App() {
 
             {story.details && (
               <div id="summary" className="mb-12 scroll-mt-32">
-                <h2 className="text-3xl font-bold mb-2 text-slate-900">Policy Performance Summary</h2>
+                <h2 className="text-3xl font-bold mb-2 text-slate-900">{story.deathClaim ? 'Final Policy Performance Summary' : 'Policy Performance Summary'}</h2>
+                {story.deathClaim && (
+                  <p className="text-slate-600 mb-4">Final statement through {story.deathClaim.statementEndDate}. The insured died in {story.deathClaim.paidYear}, and the death claim was paid.</p>
+                )}
                 <div className="w-24 h-1 bg-[#363636] mb-8"></div>
               </div>
             )}
@@ -3460,10 +3511,10 @@ export default function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {[
                   { label: "Total Premium Paid", value: story.details.totalPremium },
-                  { label: "Index Rate This Year", value: story.details.indexRate },
-                  { label: "Interest Credited This Year", value: story.details.interestCredited },
+                  { label: story.deathClaim ? "Final Annual Crediting Rate" : "Index Rate This Year", value: story.details.indexRate },
+                  { label: story.deathClaim ? "Final Year Interest Credits" : "Interest Credited This Year", value: story.details.interestCredited },
                   { label: "Accumulation Value", value: story.details.accumulationValue },
-                  { label: "Death Benefit", value: story.details.deathBenefit },
+                  { label: story.deathClaim ? "Death Benefit at Last Statement" : "Death Benefit", value: story.details.deathBenefit },
                   { label: "Cost of Insurance", value: story.details.costOfInsurance },
                 ].map((item, idx) => (
                   <motion.div 
@@ -3482,11 +3533,11 @@ export default function App() {
                       damping: 20
                     }}
                     key={idx} 
-                    className="bg-white border border-slate-200 p-10 text-left shadow-sm rounded-[2.5rem] transition-all hover:shadow-md flex items-center gap-8 group"
+                    className={`bg-white border border-slate-200 text-left shadow-sm rounded-[2.5rem] transition-all hover:shadow-md flex items-center group ${story.deathClaim ? 'p-6 sm:p-8 gap-4' : 'p-10 gap-8'}`}
                   >
                     <div className="w-2 h-16 bg-[#4A6F3C] rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform" />
-                    <div>
-                      <div className="text-3xl md:text-4xl font-bold text-[#4A6F3C] mb-1">
+                    <div className="min-w-0">
+                      <div className={`${story.deathClaim ? 'text-2xl xl:text-3xl tabular-nums' : 'text-3xl md:text-4xl'} font-bold text-[#4A6F3C] mb-1`}>
                         {item.value}
                       </div>
                       <div className="text-lg md:text-xl text-slate-600 font-medium">
@@ -3506,7 +3557,7 @@ export default function App() {
             {story.details && (
               <div id="comparison" className="mt-32 pt-24 border-t-2 border-slate-400 scroll-mt-32">
                 <h2 className="text-3xl font-bold mb-2 text-slate-900">Actual Policy vs. Original Illustration Comparison</h2>
-                <p className="text-slate-500 text-sm mb-4 italic">Comparison of actual historical data from an in-force policy to the original illustration.</p>
+                <p className="text-slate-500 text-sm mb-4 italic">{story.deathClaim ? `Comparison of actual policy performance through ${story.deathClaim.statementEndDate} to the original illustration.` : 'Comparison of actual historical data from an in-force policy to the original illustration.'}</p>
                 <div className="w-24 h-1 bg-[#363636] mb-12"></div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -3610,6 +3661,22 @@ export default function App() {
                     </motion.div>
                   )}
                 </div>
+
+                {story.deathClaim && (
+                  <figure className="mt-12 mx-auto max-w-[560px] text-center">
+                    <img
+                      src={story.deathClaim.stampSrc}
+                      alt={`${story.deathClaim.amount} Death Claim Paid`}
+                      width={1448}
+                      height={1086}
+                      loading="lazy"
+                      className="block h-auto w-full"
+                    />
+                    <figcaption className="mt-4 text-sm text-slate-600">
+                      Death claim paid in {story.deathClaim.paidYear}. The ledgers end at the final statement dated {story.deathClaim.statementEndDate}.
+                    </figcaption>
+                  </figure>
+                )}
 
                 {/* Chart Section */}
                 <div id="graph" className="mt-32 pt-24 border-t-2 border-slate-400 scroll-mt-32">
@@ -3790,7 +3857,7 @@ export default function App() {
                       <div className="text-lg font-bold">{story.age}</div>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
-                      <div className="text-xs text-slate-400 uppercase font-bold mb-1">Years Active</div>
+                      <div className="text-xs text-slate-400 uppercase font-bold mb-1">{story.deathClaim ? 'Years Tracked' : 'Years Active'}</div>
                       <div className="text-lg font-bold">{story.policyYears}</div>
                     </div>
                   </div>
