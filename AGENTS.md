@@ -132,6 +132,7 @@ Published case study: https://www.iulsuccessstories.com/?nav=Stories&story=12
 
 ## Completed policies and death claims
 
+- Keep Card #14's public story free of insurer names and branded product names, per Kevin's request. Retain the original private source documents and provenance.
 - Stop the performance ledgers, graph and summary at the last supplied statement date. Keep calendar years and completed policy years aligned; do not add a future year or put a death-claim payment into accumulation value.
 - Record the paid claim amount and year from Kevin's confirmation or settlement evidence, separately from the statement's coverage amount. A coverage statement alone does not prove settlement timing, cents, interest or beneficiary allocations. Preserve the exact stamp wording Kevin requests.
 - For a paid-claim story, use the optional `deathClaim` metadata in `SuccessStory`. It supplies the paid amount, paid year, final statement date and stamp asset. Show the red claim-paid image directly below both comparison ledgers and before the graph, with accessible alternative text. Final-statement language replaces current in-force wording only for that story.
